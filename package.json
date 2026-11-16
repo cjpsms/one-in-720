@@ -1,0 +1,10 @@
+{
+  "name": "one-in-720",
+  "version": "0.1.0",
+  "description": "1 ใน 720: a life sim of a boarding school, 720 students, 6 years",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node test/run.js"
+  }
+}

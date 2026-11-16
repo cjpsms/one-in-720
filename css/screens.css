@@ -1,0 +1,210 @@
+/* Styles for the shop, plan, termStart and lineOrder screens (owner U2). All classes start with scr-.
+   Colours come from the base.css variables (--bg --fg --muted --accent --good --bad --card) with fallbacks. */
+
+.scr {
+  --s-bg: var(--bg);
+  --s-fg: var(--fg);
+  --s-muted: var(--muted);
+  --s-accent: var(--accent);
+  --s-good: var(--good);
+  --s-bad: var(--bad);
+  --s-card: var(--card);
+  --s-on-accent: var(--accent-fg);
+  --s-line: var(--line);
+  --s-soft: var(--card2);
+  --s-accent-soft: var(--accent-soft);
+  box-sizing: border-box;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 0 8px;
+  color: var(--s-fg);
+  font-size: 16px;
+  line-height: 1.5;
+}
+.scr-title, .scr-sub { font-family: var(--serif); }
+.scr-mini, .scr-slot-time, .scr-price, .scr-cart-total, .scr-sum-main { font-family: var(--mono); }
+.scr-btn, .scr-input, .scr-step-btn, .scr-choice, .scr-chip { border-radius: 6px; }
+.scr-btn-primary { font-weight: 700; }
+.scr-shop-card, .scr-slot-item, .scr-opt { border-radius: 8px; }
+.scr-bar { box-shadow: none; }
+.scr *, .scr *::before, .scr *::after { box-sizing: border-box; }
+.scr [hidden] { display: none !important; }
+
+/* ---------- shared pieces ---------- */
+.scr-head { padding: 4px 0 8px; }
+.scr-title { margin: 0 0 4px; font-size: 1.25rem; line-height: 1.3; }
+.scr-sub { margin: 0 0 8px; font-size: 1.05rem; }
+.scr-text { margin: 4px 0 8px; color: var(--s-muted); }
+.scr-hint { margin: 6px 0; padding: 8px 12px; border-radius: 10px; background: var(--s-accent-soft); font-size: .92rem; }
+.scr-muted { color: var(--s-muted); font-size: .88rem; }
+.scr-empty { margin: 12px 0; color: var(--s-muted); text-align: center; }
+.scr-block { margin: 14px 0; }
+.scr-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.scr-stat { padding: 3px 10px; border-radius: 999px; background: var(--s-soft); font-size: .9rem; }
+
+.scr-input {
+  width: 100%; min-height: 44px; padding: 8px 12px; font: inherit; color: inherit;
+  background: var(--s-card); border: 1px solid var(--s-line); border-radius: 10px;
+}
+.scr-input:focus-visible, .scr-btn:focus-visible, .scr-choice:focus-visible, .scr-pick:focus-visible, .scr-chip:focus-visible,
+.scr-opt:focus-visible, .scr-slot:focus-visible, .scr-shop-head:focus-visible, .scr-step-btn:focus-visible, .scr-cart-sum:focus-visible {
+  outline: 2px solid var(--s-accent); outline-offset: 2px;
+}
+
+.scr-btn {
+  min-height: 44px; padding: 8px 16px; font: inherit; font-weight: 600; color: var(--s-fg); cursor: pointer;
+  background: var(--s-card); border: 1px solid var(--s-line); border-radius: 10px;
+}
+.scr-btn:disabled { opacity: .45; cursor: not-allowed; }
+.scr-btn-primary { color: var(--s-on-accent); background: var(--s-accent); border-color: var(--s-accent); }
+.scr-btn-on { background: var(--s-accent-soft); border-color: var(--s-accent); }
+.scr-btn-ghost { background: transparent; font-weight: 500; }
+.scr-btn-wide { flex: 1; }
+
+.scr-tag {
+  display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: .78rem; font-weight: 600;
+  color: var(--s-accent); background: var(--s-accent-soft); white-space: nowrap;
+}
+.scr-tag.is-bad { color: var(--s-bad); background: color-mix(in srgb, var(--s-bad) 14%, transparent); }
+.is-bad { color: var(--s-bad); }
+.is-good { color: var(--s-good); }
+
+.scr-step { display: inline-flex; align-items: center; gap: 2px; flex: none; }
+.scr-step-btn {
+  width: 44px; height: 44px; font-size: 1.3rem; line-height: 1; color: inherit; cursor: pointer;
+  background: var(--s-card); border: 1px solid var(--s-line); border-radius: 10px;
+}
+.scr-step-btn:disabled { opacity: .4; }
+.scr-step-n { min-width: 30px; text-align: center; font-weight: 700; }
+
+.scr-caret { color: var(--s-muted); width: 1em; flex: none; }
+
+.scr-warn { margin: 0 0 8px; padding: 8px 12px; border-radius: 10px; font-weight: 600; color: var(--s-bad); background: color-mix(in srgb, var(--s-bad) 13%, transparent); }
+
+/* sticky bottom bar (cart, plan summary, picker summary) */
+.scr-bar {
+  position: sticky; bottom: 0; z-index: 5; margin: 16px -4px 0; padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+  background: var(--s-card); border-top: 1px solid var(--s-line); border-radius: 14px 14px 0 0;
+  box-shadow: 0 -6px 18px rgba(0, 0, 0, .12);
+}
+.scr-bar-act { display: flex; gap: 8px; margin-top: 8px; }
+.scr-bar-act .scr-btn-primary { flex: 1; }
+.scr-summary { display: flex; flex-direction: column; gap: 4px; }
+.scr-sum-main { font-weight: 700; }
+.scr-sum-sub { font-size: .88rem; color: var(--s-muted); }
+.scr-minis { display: flex; flex-wrap: wrap; gap: 4px; }
+.scr-mini { padding: 1px 8px; border-radius: 6px; background: var(--s-soft); font-size: .8rem; }
+
+/* ---------- shop ---------- */
+.scr-toolbar { display: flex; gap: 8px; margin-bottom: 10px; }
+.scr-toolbar .scr-btn { flex: none; }
+.scr-shops { display: flex; flex-direction: column; gap: 8px; }
+.scr-shop-card { background: var(--s-card); border: 1px solid var(--s-line); border-radius: 12px; overflow: hidden; }
+.scr-shop-head {
+  display: flex; align-items: center; gap: 8px; width: 100%; min-height: 52px; padding: 8px 12px; font: inherit; text-align: left;
+  color: inherit; background: transparent; border: 0; cursor: pointer;
+}
+.scr-shop-name { flex: 1; font-weight: 700; }
+.scr-shop-count { white-space: nowrap; }
+.scr-badge { min-width: 24px; padding: 1px 8px; border-radius: 999px; text-align: center; font-size: .82rem; font-weight: 700; color: var(--s-on-accent); background: var(--s-accent); }
+.scr-shop-body { padding: 0 12px 8px; border-top: 1px solid var(--s-line); }
+.scr-items { list-style: none; margin: 0; padding: 0; }
+.scr-item { padding: 8px 0; border-bottom: 1px solid var(--s-line); }
+.scr-item:last-child { border-bottom: 0; }
+.scr-item-row { display: flex; align-items: center; gap: 10px; }
+.scr-item-info { flex: 1; min-width: 0; }
+.scr-item-name { font-weight: 600; overflow-wrap: anywhere; }
+.scr-item-name.is-struck { text-decoration: line-through; }
+.scr-item-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: .88rem; color: var(--s-muted); }
+.scr-price { color: var(--s-fg); font-weight: 700; }
+.scr-reason { font-size: .85rem; color: var(--s-bad); }
+.scr-item.is-off .scr-item-name, .scr-item.is-off .scr-price { opacity: .55; }
+.scr-qty-badge { font-weight: 700; color: var(--s-accent); }
+.scr-item-act { flex: none; }
+
+.scr-opts { margin: 8px 0 2px; padding: 10px; border-radius: 10px; background: var(--s-soft); }
+.scr-optgroup + .scr-optgroup { margin-top: 10px; }
+.scr-optlabel { margin-bottom: 6px; font-weight: 600; }
+.scr-choices { display: flex; flex-wrap: wrap; gap: 6px; }
+.scr-choice {
+  min-height: 44px; padding: 6px 14px; font: inherit; color: inherit; cursor: pointer;
+  background: var(--s-card); border: 1px solid var(--s-line); border-radius: 999px;
+}
+.scr-choice.is-on { border-color: var(--s-accent); background: var(--s-accent-soft); font-weight: 700; }
+.scr-choice:disabled { opacity: .4; cursor: not-allowed; }
+.scr-delta { color: var(--s-muted); font-size: .85rem; }
+.scr-opts-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.scr-opts-price { font-weight: 800; font-size: 1.1rem; }
+
+.scr-cart-sum {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 4px 0; font: inherit; color: inherit;
+  background: transparent; border: 0; cursor: pointer; text-align: left;
+}
+.scr-cart-count { flex: 1; font-weight: 700; }
+.scr-cart-total { font-weight: 700; }
+.scr-cart-panel { max-height: 40vh; overflow-y: auto; margin-bottom: 6px; border-bottom: 1px solid var(--s-line); }
+.scr-line { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+.scr-line-info { flex: 1; min-width: 0; }
+.scr-line-name { font-weight: 600; overflow-wrap: anywhere; }
+.scr-line-sub { font-size: .82rem; color: var(--s-muted); overflow-wrap: anywhere; }
+.scr-line-price { min-width: 52px; text-align: right; font-weight: 700; }
+.scr-fillnote { padding: 4px 0 8px; }
+
+/* ---------- plan ---------- */
+.scr-quick { display: flex; flex-direction: column; gap: 8px; margin: 8px 0 12px; }
+.scr-quick-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.scr-quick-btns .scr-btn { flex: 1 1 auto; }
+.scr-slots { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.scr-slot-item { background: var(--s-card); border: 1px solid var(--s-line); border-radius: 12px; overflow: hidden; }
+.scr-slot {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 6px 12px; font: inherit; text-align: left;
+  color: inherit; background: transparent; border: 0; cursor: pointer;
+}
+.scr-slot-time { display: flex; flex-direction: column; min-width: 54px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.scr-slot-to { font-size: .72rem; font-weight: 400; color: var(--s-muted); }
+.scr-slot-act { flex: 1; font-weight: 600; }
+.scr-slot.is-empty .scr-slot-act { color: var(--s-muted); font-weight: 400; }
+.scr-slot.is-open { background: var(--s-accent-soft); }
+.scr-slot.is-locked { box-shadow: inset 4px 0 0 var(--s-bad); }
+.scr-lights { margin: 6px 0; padding: 6px 12px; border-radius: 8px; font-size: .85rem; font-weight: 600; color: var(--s-bad); background: color-mix(in srgb, var(--s-bad) 12%, transparent); }
+.scr-picker { padding: 8px 10px 10px; border-top: 1px solid var(--s-line); display: flex; flex-direction: column; gap: 8px; }
+.scr-picks { display: grid; grid-template-columns: 1fr; gap: 6px; }
+@media (min-width: 520px) { .scr-picks { grid-template-columns: 1fr 1fr; } }
+.scr-pick {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; min-height: 48px; padding: 8px 12px; font: inherit; text-align: left;
+  color: inherit; cursor: pointer; background: var(--s-bg); border: 1px solid var(--s-line); border-radius: 10px;
+}
+.scr-pick.is-on { border-color: var(--s-accent); background: var(--s-accent-soft); }
+.scr-pick:disabled { opacity: .45; cursor: not-allowed; }
+.scr-pick-label { font-weight: 600; }
+.scr-pick-hint { flex-basis: 100%; font-size: .8rem; color: var(--s-muted); }
+
+/* ---------- termStart ---------- */
+.scr-picker-box { display: flex; flex-direction: column; gap: 8px; }
+.scr-filter { display: flex; flex-wrap: wrap; gap: 6px; }
+.scr-chip {
+  min-height: 36px; padding: 4px 12px; font: inherit; font-size: .9rem; color: inherit; cursor: pointer;
+  background: var(--s-card); border: 1px solid var(--s-line); border-radius: 999px;
+}
+.scr-chip.is-on { color: var(--s-on-accent); background: var(--s-accent); border-color: var(--s-accent); }
+.scr-count { font-size: .82rem; }
+.scr-pick-list { display: flex; flex-direction: column; gap: 6px; max-height: 52vh; overflow-y: auto; padding-right: 2px; }
+.scr-opt {
+  display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 8px 12px; font: inherit; text-align: left;
+  color: inherit; cursor: pointer; background: var(--s-card); border: 1px solid var(--s-line); border-radius: 12px;
+}
+.scr-opt.is-on { border-color: var(--s-accent); background: var(--s-accent-soft); }
+.scr-opt.is-off { opacity: .5; cursor: not-allowed; }
+.scr-radio { flex: none; width: 20px; height: 20px; border: 2px solid var(--s-muted); border-radius: 50%; }
+.scr-opt.is-on .scr-radio { border-color: var(--s-accent); background: radial-gradient(circle, var(--s-accent) 0 45%, transparent 50%); }
+.scr-opt-main { display: flex; flex-direction: column; min-width: 0; }
+.scr-opt-name { font-weight: 600; overflow-wrap: anywhere; }
+.scr-opt-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; }
+.scr-sel { font-size: .92rem; overflow-wrap: anywhere; }
+
+@media (min-width: 720px) {
+  .scr-bar { margin-left: 0; margin-right: 0; border-radius: 14px; border: 1px solid var(--s-line); bottom: 8px; }
+}
+
+/* the fast-forward dock (base.css, sticky at the bottom) must not cover the bar */
+body:has(.dock:not([hidden])) .scr-bar { bottom: 68px; }

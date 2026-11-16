@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><title>pixel scenes</title>
+<style>body{background:#0e151a;color:#e8ece9;font:12px monospace;margin:8px} .g{display:grid;grid-template-columns:repeat(2,344px);gap:8px} canvas{width:344px;height:100px;image-rendering:pixelated;display:block}</style></head>
+<body><div class="g" id="g"></div>
+<script type="module">
+import { mountScene } from '../src/ui/pixelscene.js';
+const kinds = ['yard','assembly','class','canteen','field','coop','dorm','home'];
+const hours = (new URLSearchParams(location.search).get('h') || '9,14,18,23').split(',').map(Number);
+const g = document.getElementById('g');
+for (const k of kinds) for (const h of hours) {
+  const w = document.createElement('div'); const c = document.createElement('canvas'); const l = document.createElement('div'); l.textContent = `${k} ${h}`;
+  w.append(l, c); g.append(w);
+  mountScene(c).set({ kind: k, hour: h, seed: 5 });
+}
+</script></body></html>

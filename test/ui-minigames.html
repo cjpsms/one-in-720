@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>มินิเกมทั้งสิบ (ทดสอบ)</title>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/screens.css">
+<link rel="stylesheet" href="../css/minigames.css">
+<link rel="stylesheet" href="../css/minigames2.css">
+<style>
+  body { padding: 12px; }
+  .tp { max-width: 980px; margin: 0 auto; display: grid; gap: 12px; }
+  .tp-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .tp-bar button, .tp-bar select, .tp-bar input { font: inherit; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--fg); min-height: 38px; }
+  .tp-bar button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  .tp-bar input[type=number] { width: 84px; }
+  .tp-main { display: grid; grid-template-columns: minmax(0, 375px) minmax(0, 1fr); gap: 16px; align-items: start; }
+  .tp-frame { width: 100%; max-width: 375px; }
+  .tp-frame.wide { max-width: 520px; }
+  .tp-side pre { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px; font: 12px/1.5 var(--mono); overflow: auto; max-height: 360px; margin: 0; white-space: pre-wrap; }
+  .tp-miss { color: var(--warn); font-size: 0.85rem; }
+  @media (max-width: 800px) { .tp-main { grid-template-columns: minmax(0, 1fr); } }
+  body { overflow-x: hidden; }
+</style>
+</head>
+<body>
+<div class="tp">
+  <h1>มินิเกมทั้งสิบ (หน้าทดสอบ)</h1>
+  <div class="tp-bar" id="games" role="group" aria-label="เลือกเกม"></div>
+  <div class="tp-bar">
+    <label>seed <input id="seed" type="number" value="7"></label>
+    <label>ยาก <input id="diff" type="range" min="0" max="1" step="0.05" value="0.5"> <span id="diffv">0.50</span></label>
+    <label>รูปแบบ <select id="variant"></select></label>
+    <button id="restart" type="button">เริ่มใหม่</button>
+    <button id="wide" type="button" aria-pressed="false">กว้าง 520</button>
+    <button id="bot" type="button">ทดสอบบอท x200</button>
+  </div>
+  <div class="tp-main">
+    <div class="tp-frame" id="frame"><div id="host"></div></div>
+    <div class="tp-side">
+      <div class="tp-miss" id="miss"></div>
+      <pre id="log">ยังไม่มีผล</pre>
+    </div>
+  </div>
+</div>
+<script type="module">
+import { Rng } from '../src/rng.js';
+
+// Ten games, loaded by file name (U4's five may be missing while they are being written).
+const IDS = ['watch', 'serve', 'craft', 'pattern', 'dash', 'timing', 'rhythm', 'track', 'sequence', 'steps'];
+
+// Sample specs (shape of CONTRACT3 section 4/5). Each game has 1-2 variants.
+const spec = (game, seed, difficulty, durationSec, params) => ({ id: `t-${game}`, kind: 'minigame', game, title: game, text: '', seed, difficulty, durationSec, params, canSkip: false, context: { eventId: 'test' }, placeKind: 'activity' });
+const SAMPLES = {
+  watch: { 'บรรยาย': (s, d) => spec('watch', s, d, 30, { topic: 'วันสำคัญของชาติ', slides: [{ title: 'ประวัติโรงเรียน', line: 'ก่อตั้งเพื่อเด็กเก่งทั่วภาค' }, { title: 'กฎหอพัก', line: 'เข้าหอก่อนหกโมงเย็น' }, { title: 'การสอบ', line: 'สอบกลางภาคสัปดาห์หน้า' }], keywords: ['หอพัก', 'สอบ'], questions: [{ q: 'ต้องเข้าหอกี่โมง', choices: ['ห้าโมงเย็น', 'หกโมงเย็น', 'หนึ่งทุ่ม'], answer: 1 }] }) },
+  serve: { 'ร้านลอยกระทง': (s, d) => spec('serve', s, d, 30, { stallName: 'ร้านกล้วยทอด', menu: [{ id: 'a', name: 'กล้วยทอด', steps: ['banana', 'fry'], price: 10 }, { id: 'b', name: 'ข้าวโพดปิ้ง', steps: ['corn', 'grill'], price: 15 }], ingredients: [{ id: 'banana', name: 'กล้วย' }, { id: 'fry', name: 'ทอด' }, { id: 'corn', name: 'ข้าวโพด' }, { id: 'grill', name: 'ปิ้ง' }], customers: 6, patience: 12 }) },
+  craft: { 'กระทง': (s, d) => spec('craft', s, d, 40, { kind: 'krathong', theme: { name: 'ชมพูอ่อน', palette: ['#f48fb1', '#f8bbd0', '#ffffff'] }, pieces: [{ id: 'p1', name: 'ดอกบัว', color: '#f48fb1', kind: 'flower' }, { id: 'p2', name: 'ใบตอง', color: '#4caf50', kind: 'leaf' }, { id: 'p3', name: 'เทียน', color: '#fff3c0', kind: 'candle' }, { id: 'p4', name: 'ริบบิ้น', color: '#f8bbd0', kind: 'ribbon' }], slots: 6, rubric: { palette: 0.4, symmetry: 0.3, variety: 0.3 } }) },
+  pattern: { 'กำไล': (s, d) => spec('pattern', s, d, 30, { beads: ['#e8688a', '#4fc3a1', '#e6b94d', '#7aa7ff'], rounds: 4, startLen: 3, label: 'ร้อยกำไลข้อมือ' }) },
+  dash: { 'แต่งตัว': (s, d) => spec('dash', s, d, 20, { items: [{ id: 'a', name: 'เสื้อ' }, { id: 'b', name: 'กางเกง' }, { id: 'c', name: 'รองเท้า' }, { id: 'd', name: 'หมวก' }], sequenceLen: 6, timeLimit: 20 }) },
+  timing: {
+    'ปล่อยกระทง': (s, d) => spec('timing', s, d, 20, { tries: 3, zone: 0.24, speed: 0.9, label: 'ปล่อยกระทงลงน้ำ' }),
+    'ไทเทรต': (s, d) => spec('timing', s, d, 20, { tries: 3, zone: 0.2, speed: 1.1, label: 'ไทเทรตกรด-เบส', mode: 'titration' }),
+    'เร็ว/แคบ': (s, d) => spec('timing', s, d, 20, { tries: 4, zone: 0.14, speed: 1.6, label: 'ปล่อยกระทงลงน้ำ' }),
+  },
+  rhythm: {
+    '3 ช่อง': (s, d) => spec('rhythm', s, d, 24, { lanes: 3, bpm: 96, notes: 24, label: 'การแสดงบนเวที' }),
+    '4 ช่อง': (s, d) => spec('rhythm', s, d, 28, { lanes: 4, bpm: 112, notes: 32, label: 'เต้นเปิดงาน' }),
+  },
+  track: {
+    'กล้อง': (s, d) => spec('track', s, d, 20, { mode: 'camera', speed: 1, band: 0.3 }),
+    'เสียง': (s, d) => spec('track', s, d, 20, { mode: 'sound', speed: 1, band: 0.26 }),
+  },
+  sequence: {
+    'ตัดต่อ': (s, d) => spec('sequence', s, d, 30, { label: 'ตัดต่อวิดีโองานราตรี', clips: [{ id: 'c3', label: 'ซ้อมบทครั้งแรก ผิดพลาดตลก', order: 3 }, { id: 'c1', label: 'ฉากเปิด: ป้ายชื่อรุ่นขึ้นจอ', order: 1 }, { id: 'c5', label: 'คืนแสดงจริง ผู้ชมปรบมือ', order: 5 }, { id: 'c2', label: 'เพื่อนๆ เดินเข้าห้องซ้อม', order: 2 }, { id: 'c6', label: 'ฉากปิด: ถ่ายรูปหมู่', order: 6 }, { id: 'c4', label: 'ช่วยกันแก้ฉากหลังเวที', order: 4 }] }),
+    'เมนูร้าน (4)': (s, d) => spec('sequence', s, d, 20, { label: 'ลำดับขั้นทำกล้วยทอด', clips: [{ id: 'a', label: 'ปอกกล้วย', order: 1 }, { id: 'b', label: 'ชุบแป้ง', order: 2 }, { id: 'c', label: 'ทอดในน้ำมันร้อน', order: 3 }, { id: 'd', label: 'ตักใส่ถุง', order: 4 }] }),
+  },
+  steps: {
+    'เท (ปริมาตร)': (s, d) => spec('steps', s, d, 40, {}),
+    'ให้ความร้อน': (s, d) => spec('steps', s, d, 40, { title: 'ทดลองต้มน้ำเกลือ', hazard: 'น้ำร้อนลวก', steps: [{ prompt: 'ก่อนจุดตะเกียงแอลกอฮอล์ ต้องตรวจอะไร', choices: ['ไม่มีของไวไฟใกล้ตะเกียง', 'ต่อสายไฟก่อน', 'เปิดน้ำให้ไหล'], answer: 0 }, { prompt: 'จับบีกเกอร์ที่ร้อนด้วยอะไร', choices: ['มือเปล่า', 'ที่จับบีกเกอร์ หรือผ้าหนา', 'ช้อนโลหะ'], answer: 1 }, { prompt: 'ให้ความร้อนจนอุณหภูมิถึงเป้าหมาย', choices: ['ค่อยๆ ให้ความร้อน'], answer: 0, hold: { kind: 'heat', label: 'ให้ความร้อน', target: 0.7 } }, { prompt: 'เสร็จแล้วดับตะเกียงอย่างไร', choices: ['เป่าปาก', 'ใช้ฝาครอบ', 'เทน้ำใส่'], answer: 1 }] }),
+  },
+};
+
+const q = new URLSearchParams(location.search);
+const $ = (id) => document.getElementById(id);
+const state = { game: q.get('g') || q.get('mg') || 'timing', variant: q.get('v') || '', handle: null, avail: {}, mods: {}, wide: false };
+if (q.get('wide')) state.wide = true;
+if (q.get('seed')) $('seed').value = q.get('seed');
+if (q.get('d')) { $('diff').value = q.get('d'); $('diffv').textContent = Number(q.get('d')).toFixed(2); }
+
+const logLines = [];
+function log(t) { logLines.unshift(t); logLines.length = Math.min(logLines.length, 30); $('log').textContent = logLines.join('\n'); }
+window.__mgLog = logLines;
+window.__mgResults = [];
+
+async function probe() {
+  const bar = $('games');
+  for (const id of IDS) {
+    let mod = null;
+    try { mod = await import(`../src/ui/minigames/${id}.js`); } catch (e) { mod = null; state.mods[id + '_err'] = String(e && e.message || e); }
+    state.avail[id] = !!mod;
+    state.mods[id] = mod;
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = id; b.dataset.game = id;
+    if (!mod) { b.disabled = true; b.title = 'ยังไม่มีไฟล์ (หรือโหลดไม่ได้)'; }
+    b.addEventListener('click', () => { state.game = id; state.variant = ''; mount(); });
+    bar.appendChild(b);
+  }
+  const missing = IDS.filter((i) => !state.avail[i]);
+  $('miss').textContent = missing.length ? `ยังไม่มีเกม: ${missing.join(', ')}` : '';
+}
+
+function variants() {
+  const s = SAMPLES[state.game] || {};
+  return Object.keys(s);
+}
+
+function mount() {
+  if (state.handle) { try { state.handle.destroy(); } catch (e) { log('destroy error ' + e); } state.handle = null; }
+  const host = $('host');
+  host.textContent = '';
+  const mod = state.mods[state.game];
+  document.querySelectorAll('#games button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.game === state.game)));
+  const vs = variants();
+  const sel = $('variant');
+  sel.textContent = '';
+  vs.forEach((v) => { const o = document.createElement('option'); o.value = v; o.textContent = v; sel.appendChild(o); });
+  if (!vs.includes(state.variant)) state.variant = vs[0] || '';
+  sel.value = state.variant;
+  $('frame').classList.toggle('wide', state.wide);
+  $('wide').setAttribute('aria-pressed', String(state.wide));
+  if (!mod) { host.textContent = 'เกมนี้ยังไม่มีไฟล์'; return; }
+  const sp = SAMPLES[state.game][state.variant](Number($('seed').value) | 0, Number($('diff').value));
+  window.__spec = sp;
+  log(`เริ่ม ${state.game} / ${state.variant} (seed ${sp.seed}, ยาก ${sp.difficulty})`);
+  let calls = 0;
+  state.handle = mod.play(host, sp, (res) => {
+    calls++;
+    window.__mgResults.push({ game: state.game, res, calls });
+    log(`done#${calls} ${state.game}: ${JSON.stringify(res)}${calls > 1 ? '  << เรียกซ้ำ!' : ''}`);
+  });
+}
+
+$('restart').addEventListener('click', mount);
+$('seed').addEventListener('change', mount);
+$('variant').addEventListener('change', (e) => { state.variant = e.target.value; mount(); });
+$('diff').addEventListener('input', (e) => { $('diffv').textContent = Number(e.target.value).toFixed(2); });
+$('diff').addEventListener('change', mount);
+$('wide').addEventListener('click', () => { state.wide = !state.wide; $('frame').classList.toggle('wide', state.wide); $('wide').setAttribute('aria-pressed', String(state.wide)); });
+$('bot').addEventListener('click', () => {
+  const mod = state.mods[state.game];
+  if (!mod) return;
+  const out = [];
+  for (const v of variants()) {
+    let min = 9, max = -9, sum = 0, bad = 0;
+    for (let i = 0; i < 200; i++) {
+      const sp = SAMPLES[state.game][v](i + 1, Number($('diff').value));
+      const s = mod.bot(sp, new Rng(i * 7 + 3));
+      if (!(s >= 0 && s <= 1) || Number.isNaN(s)) bad++;
+      min = Math.min(min, s); max = Math.max(max, s); sum += s;
+    }
+    out.push(`${state.game}/${v}: mean ${(sum / 200).toFixed(2)} min ${min.toFixed(2)} max ${max.toFixed(2)} ${bad ? 'นอกช่วง ' + bad : 'ok'}`);
+  }
+  out.forEach(log);
+});
+
+await probe();
+if (!state.avail[state.game]) state.game = IDS.find((i) => state.avail[i]) || 'timing';
+mount();
+window.__mg = { state, mount, IDS };
+</script>
+</body>
+</html>

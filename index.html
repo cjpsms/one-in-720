@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="th" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0e151a">
+  <title>1 ใน 720</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/screens.css">
+  <link rel="stylesheet" href="css/minigames.css">
+  <link rel="stylesheet" href="css/minigames2.css">
+</head>
+<body>
+  <div id="app">
+    <div id="view" tabindex="-1"></div>
+    <div id="bar" class="actbar" hidden></div>
+  </div>
+
+  <dialog id="dlg-sheet" class="sheet" aria-label="การตัดสินใจ">
+    <div class="sheet-inner"><div class="sheet-grab" aria-hidden="true"></div><div id="sheet-body"></div></div>
+  </dialog>
+
+  <dialog id="dlg-menu" class="sheet" aria-label="เมนู">
+    <div class="sheet-inner">
+      <div class="sheet-head"><h2>เมนู</h2><button type="button" class="btn small" data-close>ปิด</button></div>
+      <div id="menu-body"></div>
+    </div>
+  </dialog>
+
+  <dialog id="dlg-log" class="sheet" aria-label="บันทึกชีวิตทั้งหมด">
+    <div class="sheet-inner">
+      <div class="sheet-head"><h2>บันทึกชีวิตทั้งหมด</h2><button type="button" class="btn small" data-close>ปิด</button></div>
+      <ol id="log-list" class="log-list"></ol>
+    </div>
+  </dialog>
+
+  <dialog id="dlg-status" class="sheet" aria-label="สถานะเต็ม">
+    <div class="sheet-inner">
+      <div class="sheet-head"><h2>สถานะ</h2><button type="button" class="btn small" data-close>ปิด</button></div>
+      <div id="status-body"></div>
+    </div>
+  </dialog>
+
+  <dialog id="dlg-keep" class="sheet" aria-label="ของที่ระลึก">
+    <div class="sheet-inner">
+      <div class="sheet-head"><h2>ของที่ระลึก</h2><button type="button" class="btn small" data-close>ปิด</button></div>
+      <div id="keep-body"></div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <noscript><p style="padding:16px">เกมนี้ต้องเปิด JavaScript</p></noscript>
+  <script type="module" src="src/ui/app.js"></script>
+</body>
+</html>
