@@ -4,7 +4,7 @@
 // otherwise from the small local tables below.
 import { Rng } from '../rng.js';
 import { E } from './config.js';
-import { clamp } from './util.js';
+import { clamp, sexTh } from './util.js';
 import { ACT } from './adapters.js';
 import { roommates } from './world.js';
 import { calOf, say, addTrust, applyFx } from './player.js';
@@ -126,12 +126,12 @@ export function friendsView(G) {
   const sorted = pl.friends.slice().sort((a, b) => b.closeness - a.closeness);
   let top = sorted.slice(0, 8);
   if (pl.partner && !top.some((f) => f.id === pl.partner.id)) { const pf = friendOf(pl, pl.partner.id); if (pf) top = [...top.slice(0, 7), pf]; }
-  return top.map((f) => ({ id: f.id, name: f.name, grade: f.grade, room: f.room, closeness: Math.round(f.closeness), partner: !!(pl.partner && pl.partner.id === f.id) }));
+  return top.map((f) => ({ id: f.id, name: f.name, sex: sexTh((G.byId.get(f.id) || {}).sex), grade: f.grade, room: f.room, closeness: Math.round(f.closeness), partner: !!(pl.partner && pl.partner.id === f.id) }));
 }
 
 export function partnerView(G) {
   const p = G.S.pl.partner;
-  return p ? { id: p.id, name: p.name, grade: p.grade, room: p.room, since: p.since, closeness: Math.round(p.closeness) } : null;
+  return p ? { id: p.id, name: p.name, sex: sexTh((G.byId.get(p.id) || {}).sex), grade: p.grade, room: p.room, since: p.since, closeness: Math.round(p.closeness) } : null;
 }
 
 // ---------------------------------------------------------------- go with whom
@@ -148,7 +148,9 @@ export function companionScene(G, eventId) {
     const pool = S.school.students.filter((s) => s.status === 'active' && !s.isPlayer && Math.abs(s.grade - G.me.grade) <= 1 && !friendOf(pl, s.id));
     if (pool.length) { const s = pool[G.rng.int(0, pool.length - 1)]; acq = { id: s.id, name: s.name, grade: s.grade, room: s.room, closeness: 12 }; }
   }
-  const cs = ACT.COMPANION.scene(eventId, { friends: top, partner, acquaintance: acq }, G.rng);
+  // every person offered carries the sex word, so the player can tell who is who from the name list
+  const withSex = (f) => (f ? { ...f, sex: sexTh((G.byId.get(f.id) || {}).sex) } : f);
+  const cs = ACT.COMPANION.scene(eventId, { friends: top.map(withSex), partner: withSex(partner), acquaintance: withSex(acq) }, G.rng);
   const whos = {};
   const options = cs.options.map((o) => { whos[o.id] = o.who || null; const x = { id: o.id, label: o.label }; if (o.sub) x.sub = o.sub; return x; });
   return scene(G, { tag: 'companion', title: cs.title, text: cs.text, options, data: { eventId, whos } });
@@ -267,10 +269,10 @@ function confessionScene(G, who, second) {
   const cs = ACT.crushScene(G.rng, { who: { name: who.name, grade: who.grade, room: who.room }, setting, second: !!second });
   const p = scene(G, {
     tag: 'crush', title: cs.title, text: cs.text,
-    card: [['ชื่อ', who.name], ['ชั้น/ห้อง', `ม.${who.grade}/${who.room}`], ['ความสนิท', String(closeness)]],
+    card: [['ชื่อ', who.name], ['เพศ', sexTh(who.sex)], ['ชั้น/ห้อง', `ม.${who.grade}/${who.room}`], ['ความสนิท', String(closeness)]],
     options: cs.options.map((o) => opt(o.id, o.label, o.sub, o.tone)), data: { id: who.id, second: !!second },
   });
-  p.card.person = { id: who.id, name: who.name, grade: who.grade, room: who.room, closeness };
+  p.card.person = { id: who.id, name: who.name, sex: sexTh(who.sex), grade: who.grade, room: who.room, closeness };
   return p;
 }
 

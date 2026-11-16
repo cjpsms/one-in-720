@@ -43,3 +43,6 @@ export function seasonOf(cal) {
   if (cal.term === 1) return cal.cycleInTerm <= 2 ? 'hot' : 'cool';
   return cal.cycleInTerm <= 4 ? 'cold' : 'hot';
 }
+
+// 'M' / 'F' -> the Thai word shown next to a person's name
+export const sexTh = (x) => (x === 'M' ? 'ชาย' : x === 'F' ? 'หญิง' : '');

@@ -2,7 +2,7 @@
 // (which answer handler gets the payload) and `data` (what the handler needs); the UI ignores both.
 import { DORMS, DORM_DAY } from '../config.js';
 import { E } from './config.js';
-import { hhmm, seasonOf, DOW_KEYS } from './util.js';
+import { hhmm, seasonOf, DOW_KEYS, sexTh } from './util.js';
 import { calOf, clockLabel } from './player.js';
 import { shops, subjectOf, clubsFor, electivesFor, hasElective, ACTIVITY_NAMES, electiveById } from './adapters.js';
 import { actionList } from './actions.js';
@@ -162,7 +162,7 @@ export function termStartP(G, tag) {
   let text = 'เลือกชุมนุม (ที่นั่งมีจำกัด) และวิชาเลือก (พก.) ของเทอมนี้';
   if (S.mode === 'routine' && calOf(G).term === 1) {
     const d = DORMS[me.dorm];
-    const mates = roommates(G, me).map((m) => m.name).join(', ');
+    const mates = roommates(G, me).map((m) => `${m.name} (${sexTh(m.sex)})`).join(', ');
     text = `ม.${me.grade}/${me.room} หอ ${d ? d.name : '-'} ห้อง ${me.dormRoom}${mates ? ' เพื่อนร่วมห้องนอน ' + mates : ''}. ` + text;
   }
   // "same club and elective as last term"

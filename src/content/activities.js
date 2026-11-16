@@ -2225,6 +2225,9 @@ const COMP_LINES = {
   group: ['เสียงหัวเราะดังตลอดทางเพราะมีคนเยอะ', 'ถูกเพื่อนในกลุ่มหยอกจนหัวเราะไม่หยุด', 'ได้ถ่ายรูปหมู่ไว้หลายใบ'],
 };
 
+// the sex word the engine attaches to every person offered (ชาย / หญิง), shown after the name
+const sx = (x) => (x && x.sex ? ` (${x.sex})` : '');
+
 export const COMPANION = {
   events: COMP_EVENTS,
   scene(eventId, ctx = {}, rng) {
@@ -2233,7 +2236,7 @@ export const COMPANION = {
     const partner = ctx.partner || null;
     if (partner) {
       const rival = eventId === 'sport' && ctx.myColor && partner.color && partner.color !== ctx.myColor;
-      options.push({ id: 'partner', label: partner.name, sub: rival ? `แฟน · คนละสี (สี${colorTh(partner.color)}) คู่แข่งสุดน่ารัก` : 'แฟน', who: { kind: 'partner', id: partner.id, name: partner.name, closeness: partner.closeness == null ? 80 : partner.closeness } });
+      options.push({ id: 'partner', label: partner.name + sx(partner), sub: rival ? `แฟน · คนละสี (สี${colorTh(partner.color)}) คู่แข่งสุดน่ารัก` : 'แฟน', who: { kind: 'partner', id: partner.id, name: partner.name, closeness: partner.closeness == null ? 80 : partner.closeness } });
     }
     // sports day: friends are filtered to the player's colour when both sides carry a colour (ctx.myColor, friend.color)
     const sameColor = (f) => eventId !== 'sport' || !ctx.myColor || !f.color || f.color === ctx.myColor;
@@ -2241,11 +2244,11 @@ export const COMPANION = {
     const maxFriends = 4 - (partner ? 1 : 0) - (ctx.acquaintance && sameColor(ctx.acquaintance) ? 1 : 0);
     for (const f of friends.slice(0, Math.max(1, maxFriends))) {
       const where = f.grade ? `ม.${f.grade}${f.room ? '/' + f.room : ''} · ` : '';
-      options.push({ id: `friend:${f.id}`, label: f.name, sub: `${where}สนิท ${Math.round(f.closeness)}`, who: { kind: 'friend', id: f.id, name: f.name, closeness: f.closeness } });
+      options.push({ id: `friend:${f.id}`, label: f.name + sx(f), sub: `${where}สนิท ${Math.round(f.closeness)}`, who: { kind: 'friend', id: f.id, name: f.name, closeness: f.closeness } });
     }
     if (ctx.acquaintance && sameColor(ctx.acquaintance)) {
       const a = ctx.acquaintance;
-      options.push({ id: `acq:${a.id}`, label: a.name, sub: 'เพิ่งรู้จัก ยังไม่ค่อยสนิท', who: { kind: 'acquaintance', id: a.id, name: a.name, closeness: a.closeness == null ? 15 : a.closeness } });
+      options.push({ id: `acq:${a.id}`, label: a.name + sx(a), sub: 'เพิ่งรู้จัก ยังไม่ค่อยสนิท', who: { kind: 'acquaintance', id: a.id, name: a.name, closeness: a.closeness == null ? 15 : a.closeness } });
     }
     options.push({ id: 'alone', label: 'เดินคนเดียว', sub: ev.alone, who: null });
     options.push({ id: 'group', label: 'ไปกับห้อง/หอ', sub: ev.group, who: null });

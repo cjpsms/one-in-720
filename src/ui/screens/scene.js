@@ -43,7 +43,7 @@ function personCard(p) {
     h('div', { class: 'pc-av', 'aria-hidden': 'true', text: initial }),
     h('div', { class: 'pc-body' },
       h('div', { class: 'pc-name', text: p.name || '' }),
-      h('div', { class: 'pc-sub', text: [p.grade ? `ม.${p.grade}${p.room ? '/' + p.room : ''}` : null, p.note].filter(Boolean).join(' · ') }),
+      h('div', { class: 'pc-sub', text: [p.sex || null, p.grade ? `ม.${p.grade}${p.room ? '/' + p.room : ''}` : null, p.note].filter(Boolean).join(' · ') }),
       h('div', { class: 'pc-bar', role: 'img', 'aria-label': `ความสนิท ${Math.round(c)} จาก 100` }, h('span', { class: 'label', text: 'ความสนิท' }), h('div', { class: 'mg-bar' }, h('i', { style: `width:${c}%;background:var(--c-bonds)` })), h('b', { class: 'mono', text: String(Math.round(c)) }))));
 }
 

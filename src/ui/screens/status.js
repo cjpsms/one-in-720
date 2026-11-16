@@ -104,7 +104,7 @@ function friendsCard(view) {
     friends.length ? h('ul', { class: 'friend-list' }, friends.map((f) => {
       const c = Math.max(0, Math.min(100, Number(f.closeness) || 0));
       return h('li', null,
-        h('span', { class: 'fn' }, f.name, f.partner ? h('span', { class: 'partner-chip', text: 'แฟน' }) : null, h('small', { text: f.grade ? `ม.${f.grade}${f.room ? '/' + f.room : ''}` : '' })),
+        h('span', { class: 'fn' }, f.name, f.partner ? h('span', { class: 'partner-chip', text: 'แฟน' }) : null, h('small', { text: [f.sex, f.grade ? `ม.${f.grade}${f.room ? '/' + f.room : ''}` : ''].filter(Boolean).join(' · ') })),
         h('div', { class: 'mg-bar', role: 'img', 'aria-label': `ความสนิท ${Math.round(c)} จาก 100` }, h('i', { style: `width:${c}%;background:var(--c-bonds)` })),
         h('b', { text: String(Math.round(c)) }));
     })) : null);
