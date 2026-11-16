@@ -322,7 +322,7 @@ export const SCENES_E = [
     text: (c) => `${c.friend.tag} กำลังจะส่งการบ้านคาบหน้า แต่ยังไม่ได้ทำเลย จึงมองมาที่สมุดของเรา`,
     options: [
       { id: 'explain', label: 'อธิบายวิธีคิดแล้วให้ทำเอง', ok: 'ทันเวลา', odds: [60, ['fclose', 0.3, 'สนิทกัน']], yes: R({ knowledge: 1, energy: -2, peer: 1 }, (c) => `${c.friend.name}ทำตามที่อธิบายและทันส่ง`, { friend: 3 }), no: R({ energy: -3 }, (c) => `${c.friend.name}ทำไม่ทัน ได้แต่บ่นเบาๆ`, { friend: 0 }) },
-      { id: 'copy', label: 'ให้ลอกไปเลย', ok: 'ไม่โดนจับ', odds: [65, ['conduct', -3, 'ถูกจับตามอง'], ['mem', -10, 'เคยโดนจับเรื่องลอก', 'copyCaught']], yes: R({ peer: 2 }, (c) => `${c.friend.name}ลอกทันและเลี้ยงขนมเรา`, { friend: 3 }), no: R({ peer: -2, stress: 5 }, (c) => `ครูเห็นคำตอบเหมือนกันทั้งสองเล่ม เรียกเราและ${c.friend.name}ไปคุย`, { offend: 'cheat', mem: 'copyCaught', friend: -2 }) },
+      { id: 'copy', label: 'ให้ลอกไปเลย', ok: 'ไม่โดนจับ', odds: [65, ['conduct', -3, 'ถูกจับตามอง'], ['mem', -10, 'เคยโดนจับเรื่องลอก', 'copycaught']], yes: R({ peer: 2 }, (c) => `${c.friend.name}ลอกทันและเลี้ยงขนมเรา`, { friend: 3 }), no: R({ peer: -2, stress: 5 }, (c) => `ครูเห็นคำตอบเหมือนกันทั้งสองเล่ม เรียกเราและ${c.friend.name}ไปคุย`, { offend: 'cheat', mem: 'copycaught', friend: -2 }) },
       { id: 'no', label: 'ปฏิเสธเพราะเคยโดนมาก่อน', yes: R({ peer: -1 }, (c) => `${c.friend.name}ดูผิดหวังแต่เข้าใจเรา`, { friend: -1 }) },
     ],
   }),

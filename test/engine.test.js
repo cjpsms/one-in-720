@@ -731,7 +731,7 @@ const stepAll = (g, fn, maxBlocks = 100000) => {
       if (p && !('ok' in r)) { // a decision, seen once (before it is answered)
         const day = g.view().clock.day;
         const t = p.tag;
-        if (t === 'event' || t === 'cscene') (byDay[day] ||= []).push('event');
+        if (t === 'event' || t === 'cscene') (byDay[day] ||= []).push(p.data && p.data.id === 'scolded' ? 'scolded' : 'event'); // a teacher snap is a built scene, not a random event
         else if (t === 'scolded' || t === 'conduct') (byDay[day] ||= []).push(t); // a hearing or a punishment follows from a mark, it may share a day
         else if (!['intro', 'final'].includes(t)) (byDay[day] ||= []).push('other');
         stops++;

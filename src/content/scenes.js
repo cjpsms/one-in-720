@@ -5,6 +5,7 @@ import { SCENES_C } from './scenes-c.js';
 import { SCENES_D } from './scenes-d.js';
 import { SCENES_E } from './scenes-e.js';
 import { SCENES_F } from './scenes-f.js';
+import { SCENES_G } from './events-gen.js';
 
-export const SCENES = [...SCENES_A, ...SCENES_B, ...SCENES_C, ...SCENES_D, ...SCENES_E, ...SCENES_F];
+export const SCENES = [...SCENES_A, ...SCENES_B, ...SCENES_C, ...SCENES_D, ...SCENES_E, ...SCENES_F, ...SCENES_G];
 export const SCENE_BY_ID = Object.fromEntries(SCENES.map((s) => [s.id, s]));

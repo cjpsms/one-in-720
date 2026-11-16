@@ -94,7 +94,7 @@ export function sceneP(G, def, vars, place) {
     return x;
   });
   // the default answer (a skipped or auto-answered scene) is the quiet one: it must not be a free study boost or a gamble
-  const gain = (o) => { const r = o.yes || {}; return ((r.fx && r.fx.knowledge) || 0) + 2 * (r.diligence || 0) + (o.odds ? 0.5 : 0) + (o.cost ? 5 : 0); };
+  const gain = (o) => { const r = o.yes || {}; return ((r.fx && r.fx.knowledge) || 0) + 2 * (r.diligence || 0) + (o.odds ? 0.5 : 0) + (o.cost ? 5 : 0) + ((o.no && o.no.offend) || (r.offend) ? 4 : 0); };
   const quiet = def.options.filter((o) => options.some((x) => x.id === o.id && !x.disabled)).sort((a, b) => gain(a) - gain(b))[0];
   const first = quiet ? { id: quiet.id } : options.find((x) => !x.disabled);
   return scene(G, {
