@@ -177,7 +177,7 @@ export function difficultyFor(game, stats, extra = 0) {
     wsum += w[k];
   }
   cond = wsum ? cond / wsum : 0.5;
-  return clamp01(0.5 - 0.35 * (cond - 0.5) + extra);
+  return clamp01(0.3 - 0.35 * (cond - 0.5) + extra); // 0.3 base: cj 2026-11-16 said the games were far too hard
 }
 
 // ---- SCHEDULE ------------------------------------------------------------------------------------------------------
@@ -621,13 +621,13 @@ export function makeStalls(rng, { teachers = [], dorms = [], playerWealth } = {}
 // Params of the `serve` mini game for a stall (work for it, or run your own).
 export function serveSpec(rng, stall, { difficulty = 0.5, own = false } = {}) {
   const d = clamp01(difficulty);
-  const customers = own ? rint(rng, [12, 18]) : rint(rng, [8, 12]);
+  const customers = own ? rint(rng, [8, 12]) : rint(rng, [5, 8]);
   return {
     stallName: stall.name,
     menu: stall.menu.map((m) => ({ id: m.id, name: m.name, steps: m.steps.slice(), price: m.price })),
-    ingredients: stallIngredients(rng, stall.menu, 2 + Math.round(d * 2)),
+    ingredients: stallIngredients(rng, stall.menu, 1 + Math.round(d * 1)),
     customers,
-    patience: r1(lerp(9, 5, d)),
+    patience: r1(lerp(16, 10, d)),
   };
 }
 

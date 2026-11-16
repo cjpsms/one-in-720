@@ -56,10 +56,28 @@ function hallSpec(G, kind, ctx) {
 // ---------------------------------------------------------------- launching a play
 // o: { cat, filler, game, title, text, params, canSkip, skipLabel, ctxId, stage, who, placeKind, bias, xs, data }
 // When no pending opens (auto mode, or a filler play on a day that already has a stop) the result goes straight into a.res.
+// cj 2026-11-16: mini games are rare. One a year is compulsory (the first play of that year's main event: Loy Krathong or the night show, alternating); every other play is asked first (play yourself or let the game play it);
+// watching plays (hall talks) and filler plays always resolve by themselves.
+const MAIN_BY_YEAR = ['loy', 'show', 'loy', 'show', 'loy', 'loy']; // the last year has no night show (the story ends first)
+function mainEventOf(ctxId) {
+  const m = /^(loy|sport|show)_/.exec(String(ctxId || ''));
+  return m ? m[1] : null;
+}
+function compulsory(G, o) {
+  const pl = G.S.pl;
+  const year = calOf(G).year;
+  const cat = mainEventOf(o.ctxId);
+  if (!cat || o.game === 'watch' || cat !== MAIN_BY_YEAR[Math.min(5, year - 1)]) return false;
+  if (pl.mgForced && pl.mgForced.year === year) return false; // this year's compulsory play is already used
+  pl.mgForced = { year, ctx: o.ctxId };
+  return true;
+}
+
 function launch(G, a, o) {
   const S = G.S;
   const diff = mgDifficulty(G, o.game, o.bias || 0, o.xs);
-  const blocked = S.miniGames !== 'play' || (o.filler && !o.forced && (E.FILLER_AUTO || S.stopDay === S.day || S.playDay === S.day));
+  const auto = o.game === 'watch' || (o.filler && !o.forced && (E.FILLER_AUTO || S.stopDay === S.day || S.playDay === S.day));
+  const blocked = S.miniGames !== 'play' || auto;
   if (blocked) {
     const skip = o.canSkip && S.miniGames === 'auto' && G.rng.chance(A.SKIP_AUTO[S.routine.study] || 0);
     a.res = skip ? { skip: true } : { score: autoScore(G, o.game, diff, o.xs), auto: true };
@@ -67,11 +85,36 @@ function launch(G, a, o) {
     return;
   }
   if (o.filler) S.playDay = S.day;
+  const must = o.forced || compulsory(G, o);
   const p = mgPending(G, {
-    tag: 'act_mg', game: o.game, title: o.title, text: o.text, params: o.params, canSkip: o.canSkip, skipLabel: o.skipLabel,
+    tag: 'act_mg', game: o.game, title: o.title, text: must && !o.forced ? `${o.text || ''}\nเกมบังคับประจำปีนี้` : o.text, params: o.params, canSkip: must ? false : o.canSkip, skipLabel: o.skipLabel,
     context: { eventId: o.ctxId, stage: o.stage || a.stage, who: o.who || '' }, placeKind: o.placeKind, difficulty: diff, xs: o.xs, data: {},
   });
-  IO.ask(G, p);
+  if (must) { IO.ask(G, p); return; }
+  // optional: ask first. The pending to play is kept in the act until the player says yes.
+  a.mgp = p;
+  const options = [
+    opt('auto', 'ให้ระบบเล่นให้', 'ผลออกมาปานกลาง ไม่ต้องเล่นเอง'),
+    opt('play', 'ลงเล่นเอง', 'ผลขึ้นกับฝีมือ ทำดีได้มากกว่า ทำพลาดได้น้อยกว่า', 'good'),
+  ];
+  if (o.canSkip) options.push(opt('skip', o.skipLabel || 'ไม่เข้าร่วม', 'ข้ามไปเลย'));
+  IO.ask(G, scene(G, { tag: 'act_optin', title: o.title, text: `${o.text || ''}\nอยากลงเล่นมินิเกมนี้เองไหม`, options, data: { defaultId: 'auto' } }));
+}
+
+// the answer of the "play it yourself?" question
+export function answerOptin(G, payload) {
+  const a = G.S.act;
+  if (!a) return;
+  const p = a.mgp;
+  a.mgp = null;
+  if (payload.optionId === 'play' && p) { IO.ask(G, p); return; }
+  if (payload.optionId === 'skip') a.res = { skip: true };
+  else {
+    const diff = p && p.difficulty !== undefined ? p.difficulty : 0.5;
+    a.res = { score: autoScore(G, (p && p.game) || 'serve', diff, p && p.xs), auto: true };
+    say(G, 'เล่นอัตโนมัติ', 'neutral', true);
+  }
+  IO.go(G, 'act');
 }
 
 // the answer of a minigame pending

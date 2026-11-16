@@ -41,6 +41,7 @@ let allPlaysValid = true;
 {
   const t0 = Date.now();
   const g = life({ seed: 31 }, (gg, r) => {
+    if (r.pending && !('block' in r) && r.pending.tag === 'act_optin') return { optionId: 'play' }; // say yes to every optional play
     if (r.pending && !('block' in r) && r.pending.kind === 'minigame') {
       const p = r.pending;
       const year = gg.view().progress.yearIndex + 1;
@@ -60,7 +61,7 @@ let allPlaysValid = true;
   const normal = ys.filter((y) => y !== 1 && y !== 4);
   check('plays per school year are 4-8 (cj 2026-11-16: fewer mini games, only the festivals and contests; year 1 and 4 add the freshers)', normal.every((y) => perYear[y] >= 4 && perYear[y] <= 8) && ys.filter((y) => y === 1 || y === 4).every((y) => perYear[y] >= 6 && perYear[y] <= 12), JSON.stringify(perYear));
   check('the Loy Krathong float and the night show happen once a year (the last year has no show after the ending)', ctxCount.loy_float >= 5 && ctxCount.loy_float <= 6 && (ctxCount.show_act || 0) + (ctxCount.show_camera || 0) + (ctxCount.show_sound || 0) + (ctxCount.show_edit || 0) + (ctxCount.show_director || 0) + (ctxCount.show_watch || 0) >= 5);
-  check('the freshers play in year 1 and year 4', (ctxCount.fresher_game || 0) + (ctxCount.fresher_hall || 0) + (ctxCount.fresher_serve || 0) >= 6);
+  check('the freshers still have a few plays in year 1 and year 4 (most are automatic now)', (ctxCount.fresher_game || 0) + (ctxCount.fresher_hall || 0) + (ctxCount.fresher_serve || 0) >= 3);
   check('a whole life in play mode stays fast (under 8 s)', timeMs < 8000, timeMs + ' ms');
 }
 
@@ -136,7 +137,7 @@ let allPlaysValid = true;
       g.act(g.defaultPayload());
     } else g.stepBlock();
   }
-  check('skip answers are refused when the play cannot be skipped', (() => { const h = createGame({ seed: 502 }); for (let i = 0; i < 400; i++) { if (h.pending && h.pending.kind === 'minigame' && !h.pending.canSkip) return !h.act({ skip: true }).ok; if (h.pending) h.act(h.defaultPayload()); else h.stepBlock(); } return false; })());
+  check('skip answers are refused when the play cannot be skipped', (() => { const h = createGame({ seed: 502 }); for (let i = 0; i < 6000; i++) { if (h.pending && h.pending.kind === 'minigame' && !h.pending.canSkip) return !h.act({ skip: true }).ok; if (h.pending) h.act(h.defaultPayload()); else h.stepBlock(); } return false; })());
   void before;
 }
 

@@ -12,7 +12,7 @@
 
   /* landing: picture on the left (sticky), text on the right */
   .landing { display: grid; grid-template-columns: minmax(380px, 5fr) 6fr; grid-template-rows: auto auto 1fr; column-gap: 40px; padding: 28px 32px 40px; align-items: start; }
-  .landing > .map-wrap { grid-column: 1; grid-row: 1 / span 3; position: sticky; top: 24px; height: min(640px, calc(100vh - 140px)); border-radius: 16px; border: 1px solid var(--line); }
+  .landing > .map-wrap { grid-column: 1; grid-row: 1 / span 3; position: sticky; top: 24px; height: min(560px, calc(100vh - 160px)); border-radius: 16px; border: 1px solid var(--line); }
   .landing > .map-wrap::after { display: none; }
   .landing > .onair { grid-column: 2; grid-row: 1; margin: 0 0 8px; }
   .landing > .row-keep { grid-column: 2; grid-row: 2; padding: 0; }
@@ -22,20 +22,21 @@
   .facts { grid-template-columns: repeat(2, 1fr); }
   .land-body .card { margin-bottom: 14px; }
 
-  /* the life screen: header on top, then scene and day on the left, stats and the rest on the right */
+  /* the life screen: header on top; left = the picture and the day timeline, right = stats, focus and the record */
   .life { padding: 0 32px 40px; }
-  .life-main { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 18px 28px; align-items: start; }
-  .life-main > :nth-child(1), .life-main > :nth-child(2) { grid-column: 1; }
-  .life-main > :nth-child(n+3) { grid-column: 2; }
-  .life-main > :nth-child(1) { grid-row: 1; }
-  .life-main > :nth-child(2) { grid-row: 2; }
-  .life-main > :nth-child(3) { grid-row: 1; }
-  .life-main > :nth-child(4) { grid-row: 2; }
-  .life-main > :nth-child(5) { grid-row: 3; }
-  .stats4 { padding-left: 0; padding-right: 0; }
+  .life-head { max-width: none; }
+  .life-head .speed-row { max-width: 760px; }
+  .life-main { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); grid-template-rows: auto auto auto; gap: 18px 28px; align-items: start; padding: 20px 0 0; }
+  .life-main > .scene-card { grid-column: 1; grid-row: 1; width: 100%; max-width: none; margin: 0; }
+  .life-main > .scene-card canvas { aspect-ratio: 172 / 50; min-height: 150px; }
+  .life-main > .day-card { grid-column: 1; grid-row: 2 / span 3; }
+  .life-main > .stats4 { grid-column: 2; grid-row: 1; padding: 16px 20px; }
+  .life-main > .focus-card { grid-column: 2; grid-row: 2; }
+  .life-main > .rec-card { grid-column: 2; grid-row: 3; }
+  .life-main > .day-card .tl { max-height: min(68vh, 720px); }
 
   /* scenes and choices: wider text, options in a grid when there are several */
-  .scene-card, .scene { max-width: 860px; margin-left: auto; margin-right: auto; }
+  .scene { max-width: 860px; margin-left: auto; margin-right: auto; }
   dialog.sheet { max-width: 760px; width: calc(100% - 64px); border-radius: 16px; margin: auto; border-bottom: 1px solid var(--line); }
   dialog.sheet .sheet-inner { padding-left: 28px; padding-right: 28px; }
   .rows { grid-template-columns: repeat(3, 1fr); }

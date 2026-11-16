@@ -146,7 +146,7 @@ function checkWatch(spec, where) {
     if (s <= 20) {
       isJson(stalls, `stalls seed ${s}`);
       const sp = serveSpec(new Rng(s), stalls[0], { difficulty: 0.7 });
-      ok(sp.stallName === stalls[0].name && sp.customers >= 8 && sp.patience > 0, 'serveSpec shape');
+      ok(sp.stallName === stalls[0].name && sp.customers >= 5 && sp.patience > 0, 'serveSpec shape');
       const ids = new Set(sp.ingredients.map((i) => i.id));
       for (const m of sp.menu) for (const step of m.steps) ok(ids.has(step), 'serve ingredients cover every step');
       isJson(sp, `serveSpec ${s}`);
@@ -420,7 +420,7 @@ function checkWatch(spec, where) {
         if (b.game === 'watch') checkWatch(sp, `fresher ${b.id}`);
         if (b.game === 'pattern') ok(sp.beads.length === 5 && sp.rounds >= 4, 'fresher pattern');
         if (b.game === 'dash') ok(sp.items.length >= 6 && sp.sequenceLen >= 5, 'fresher dash');
-        if (b.game === 'serve') ok(sp.menu.length === 3 && sp.customers >= 8, 'fresher serve');
+        if (b.game === 'serve') ok(sp.menu.length === 3 && sp.customers >= 5, 'fresher serve');
       } else ok(sp === null, `auto block ${b.id} has no spec`);
       const r = fresherResult(b.id, b.play ? 0.7 : null, {}, new Rng(1));
       ok(r.log && r.tier && r.fx.peer > 0, `fresherResult ${b.id}`);

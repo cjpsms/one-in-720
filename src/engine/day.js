@@ -24,7 +24,7 @@ import { closeTerm, gateScene, gateResultScene, endGame, promoteAll, newYearScen
 import { moodOf } from './teachers.js';
 import { routinePayload, AUTO_TAGS, focusP, moneyScene } from './routine.js';
 import { dayKind, getPlan, morningPeriods, afternoonPeriods } from './plan.js';
-import { bindIO, enterAct, actStep, answerMg, answerActScene, answerCompanion, answerRole, roleScene, awardApplies } from './festival.js';
+import { bindIO, enterAct, actStep, answerMg, answerOptin, answerActScene, answerCompanion, answerRole, roleScene, awardApplies } from './festival.js';
 import { defaultSatGroup } from './pending.js';
 import { bumpFriend, friendOf, termFriends, crushScene, answerCrush, answerBreakup, answerCheckin, checkinScene, breakupRoll, doDate } from './friends.js';
 import { ACT } from './adapters.js';
@@ -41,7 +41,7 @@ function autoAnswer(G, p) {
   if (p.kind === 'shop' && p.mode === 'meal' && v.payload.cart && v.payload.cart.length) applyFx(G, R.FOOD_MEAL_FX[G.S.routine.food]);
 }
 // the choice scenes inside festivals: answered by the routine when the player chose "auto" mini games
-const ACT_AUTO_TAGS = new Set(['companion', 'fair_choice', 'fair_own', 'fair_contest', 'show_role']);
+const ACT_AUTO_TAGS = new Set(['act_optin', 'companion', 'fair_choice', 'fair_own', 'fair_contest', 'show_role']);
 const ask = (G, p) => {
   if (G.S.mode === 'routine' && (AUTO_TAGS.has(p.tag) || (G.S.miniGames === 'auto' && ACT_AUTO_TAGS.has(p.tag)))) return autoAnswer(G, p);
   G.S.queue.push(p);
@@ -928,6 +928,7 @@ const ANSWERS = {
   cscene: answerCScene,
   conduct: answerConduct,
   act_mg: (G, payload) => answerMg(G, payload),
+  act_optin: (G, payload) => answerOptin(G, payload),
   fair_choice: (G, payload) => answerActScene(G, payload),
   fair_own: (G, payload) => answerActScene(G, payload),
   fair_contest: (G, payload) => answerActScene(G, payload),

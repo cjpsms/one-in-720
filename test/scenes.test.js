@@ -42,7 +42,7 @@ const PLACES = ['class', 'dorm', 'canteen', 'weekend', 'home'];
     }
   }
   check('every scene is well formed (ids, options, odds factors, fx keys, offence kinds, log lines)', bad === '', bad);
-  check('at least 55 scenes, and the direct "scolded" scene exists', SCENES.length >= 55 && !!SCENE_BY_ID.scolded, String(SCENES.length));
+  check('200 scenes, and the direct "scolded" scene exists', SCENES.length >= 200 && !!SCENE_BY_ID.scolded, String(SCENES.length));
 }
 
 // ---------- scenes in a running game ----------
