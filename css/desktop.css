@@ -1,0 +1,48 @@
+/* Desktop layout (>= 900px): the phone column becomes a wide page, the landing and the life screen use two columns. */
+.school-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: -8px 0 22px; }
+.school-th { font: 600 1.05rem/1.5 var(--serif); }
+.school-code { font: 700 0.8rem var(--mono); letter-spacing: 0.1em; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 1px 10px; }
+.school-en { flex-basis: 100%; font: 500 0.82rem var(--mono); color: var(--muted); }
+
+@media (min-width: 900px) {
+  body { font-size: 17px; }
+  #app { max-width: 1180px; }
+  .actbar { padding-left: 32px; padding-right: 32px; justify-content: center; }
+  .actbar .btn { flex: 0 1 340px; }
+
+  /* landing: picture on the left (sticky), text on the right */
+  .landing { display: grid; grid-template-columns: minmax(380px, 5fr) 6fr; grid-template-rows: auto auto 1fr; column-gap: 40px; padding: 28px 32px 40px; align-items: start; }
+  .landing > .map-wrap { grid-column: 1; grid-row: 1 / span 3; position: sticky; top: 24px; height: min(640px, calc(100vh - 140px)); border-radius: 16px; border: 1px solid var(--line); }
+  .landing > .map-wrap::after { display: none; }
+  .landing > .onair { grid-column: 2; grid-row: 1; margin: 0 0 8px; }
+  .landing > .row-keep { grid-column: 2; grid-row: 2; padding: 0; }
+  .landing > .land-body { grid-column: 2; grid-row: 3; padding: 0; }
+  .landing > .resume-panel { grid-column: 2; }
+  .title { font-size: 5.2rem; }
+  .facts { grid-template-columns: repeat(2, 1fr); }
+  .land-body .card { margin-bottom: 14px; }
+
+  /* the life screen: header on top, then scene and day on the left, stats and the rest on the right */
+  .life { padding: 0 32px 40px; }
+  .life-main { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 18px 28px; align-items: start; }
+  .life-main > :nth-child(1), .life-main > :nth-child(2) { grid-column: 1; }
+  .life-main > :nth-child(n+3) { grid-column: 2; }
+  .life-main > :nth-child(1) { grid-row: 1; }
+  .life-main > :nth-child(2) { grid-row: 2; }
+  .life-main > :nth-child(3) { grid-row: 1; }
+  .life-main > :nth-child(4) { grid-row: 2; }
+  .life-main > :nth-child(5) { grid-row: 3; }
+  .stats4 { padding-left: 0; padding-right: 0; }
+
+  /* scenes and choices: wider text, options in a grid when there are several */
+  .scene-card, .scene { max-width: 860px; margin-left: auto; margin-right: auto; }
+  dialog.sheet { max-width: 760px; width: calc(100% - 64px); border-radius: 16px; margin: auto; border-bottom: 1px solid var(--line); }
+  dialog.sheet .sheet-inner { padding-left: 28px; padding-right: 28px; }
+  .rows { grid-template-columns: repeat(3, 1fr); }
+  .stat-list { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 1300px) {
+  #app { max-width: 1280px; }
+  .facts { grid-template-columns: repeat(4, 1fr); }
+  body { font-size: 18px; }
+}

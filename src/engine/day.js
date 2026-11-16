@@ -15,7 +15,9 @@ import { planDay, freeSlots, dayLabel } from './dayplan.js';
 import { npcSchoolDay, npcWeekend, npcHome, npcLineDay, npcTermStart } from './npc.js';
 import { assignTasks, resolveNpcTasks, playerTasks, missingItems } from './tasks.js';
 import { scene, opt, shopP, classPlanP, planP, termStartP, lineOrderP, periodInfo, parentsInfo, mk, needElective } from './pending.js';
-import { runBlock, answerScolded } from './blocks.js';
+import { runBlock } from './blocks.js';
+import { queueBeat, answerCScene } from './scenes.js';
+import { answerConduct, conductDaily, cond } from './conduct.js';
 import { validate, defaultPayload as makeDefault } from './payloads.js';
 import { tableFor } from './actions.js';
 import { closeTerm, gateScene, gateResultScene, endGame, promoteAll, newYearScene, setupTermPlayer } from './term.js';
@@ -127,6 +129,8 @@ function eventCtx(G, place, ev) {
 function maybeEvent(G, place, force = false, after = null) {
   const S = G.S;
   if (S.mode === 'routine' && !force) return;
+  // most story beats are the new choice scenes with a % on every option; the old events fill the rest
+  if (G.rng.chance(E.BEAT.SCENE_SHARE) && (force || G.rng.chance(E.EVENT_CHANCE[place] || 0)) && queueBeat(G, place, after)) return;
   const ctx = eventCtx(G, place);
   ctx.eventChance = force ? 1 : E.EVENT_CHANCE[place];
   const ev = pickEvent(ctx, G.rng);
@@ -517,11 +521,16 @@ const STEPS = {
     S.place = 'บ้าน';
     maybeEvent(G, 'home');
     const holiday = S.yearPending;
+    const barred = cond(G).noHome > 0 && !holiday; // a dorm punishment or a suspension: no trip home this time
     ask(G, scene(G, {
-      tag: 'trip', title: holiday ? 'ปิดเทอม กลับบ้าน' : 'กลับบ้าน (จุดเซฟ)',
-      text: holiday ? 'จบปีการศึกษาแล้ว ได้กลับบ้านยาวๆ ก่อนขึ้นชั้นใหม่' : 'เลิกเรียนวันศุกร์ ได้กลับบ้านสองวัน เสาร์อาทิตย์ แล้วกลับหอตอน 18:00 วันอาทิตย์ ระบบเซฟให้ตอนนี้',
+      tag: 'trip', title: holiday ? 'ปิดเทอม กลับบ้าน' : barred ? 'โดนงดกลับบ้านรอบนี้' : 'กลับบ้าน (จุดเซฟ)',
+      text: holiday ? 'จบปีการศึกษาแล้ว ได้กลับบ้านยาวๆ ก่อนขึ้นชั้นใหม่' : barred ? 'เลิกเรียนวันศุกร์ เพื่อนๆ ทยอยกลับบ้านกันหมด แต่เราถูกงดกลับบ้านรอบนี้ตามโทษของหอพัก ต้องอยู่หอสองวัน ระบบเซฟให้ตอนนี้' : 'เลิกเรียนวันศุกร์ ได้กลับบ้านสองวัน เสาร์อาทิตย์ แล้วกลับหอตอน 18:00 วันอาทิตย์ ระบบเซฟให้ตอนนี้',
       card: [['เงินที่มี', `${nf(G.me.money)} บาท`], ['เทอม', `${cal.term} ปี ${cal.year}`]],
-      options: [
+      options: barred ? [
+        opt('rest', 'อยู่หอพักผ่อน', 'เครียดลดน้อยกว่าที่บ้าน'),
+        opt('study', 'อยู่หออ่านหนังสือ', 'ความรู้ขึ้นนิดหน่อย'),
+        opt('quit', 'ลาออก', `ค่าธรรมเนียม ${nf(E.QUIT_FEE_PER_TERM)} บาทต่อเทอม`, 'bad'),
+      ] : [
         opt('rest', 'พักผ่อนอยู่บ้านเงียบๆ', 'นอนเยอะ เครียดลด', 'good'),
         opt('study', 'ทำงานและอ่านหนังสือที่บ้าน', 'ความรู้ขึ้นนิดหน่อย'),
         opt('out', 'ไปเที่ยวกับครอบครัวหรือเพื่อน', 'สนุกแต่เสียเงิน 300 บาท'),
@@ -617,7 +626,11 @@ function planEventForDay(G) {
   const cal = calOf(G);
   S.evPlan = null;
   if (cal.lastSchoolDay && cal.lastCycleOfTerm) return; // the term report is today's stop
-  if (!G.rng.chance(cal.schoolDay ? E.EVENT_DAY.school : E.EVENT_DAY.weekend)) return;
+  conductDaily(G);
+  const gap = S.day - (S.pl.lastBeat || 0);
+  const B = E.BEAT;
+  const chance = (cal.schoolDay ? B.SCHOOL : B.WEEKEND) + (gap >= B.CATCHUP_AFTER ? (gap - B.CATCHUP_AFTER + 1) * B.CATCHUP_STEP : 0);
+  if (!G.rng.chance(Math.min(0.95, chance))) return;
   if (getPlan(G).playDays[S.day]) return; // a day with a play is a day with its own stop
   const dk = dayKind(G);
   const all = cal.schoolDay
@@ -704,6 +717,7 @@ function periodStep(G) {
 
 const HOME_SEQ = ['sleep', 'h_morning', 'h_lunch', 'h_afternoon', 'h_evening', 'sleep', 'h_morning', 'h_lunch', 'h_afternoon', 'h_evening', 'sleep'];
 const HOME_TEXT = {
+  stay: { h_morning: 'อยู่หอ นอนตื่นสาย', h_lunch: 'กินข้าวที่โรงอาหารเกือบว่างเปล่า', h_afternoon: 'นั่งเงียบๆ ในหอพัก เพื่อนๆ กลับบ้านกันหมด', h_evening: 'ค่ำที่หอพักเงียบๆ' },
   rest: { h_morning: 'นอนตื่นสายที่บ้าน', h_lunch: 'กินข้าวฝีมือแม่', h_afternoon: 'ดูทีวี พักผ่อนเงียบๆ', h_evening: 'ค่ำที่บ้านเงียบๆ' },
   study: { h_morning: 'อ่านหนังสือที่บ้าน', h_lunch: 'กินข้าวกับครอบครัว', h_afternoon: 'ทำงานที่ครูสั่ง', h_evening: 'ทบทวนบทเรียน' },
   out: { h_morning: 'ออกไปเที่ยวกับครอบครัวและเพื่อน', h_lunch: 'กินข้าวนอกบ้าน', h_afternoon: 'เดินเล่น ซื้อของ', h_evening: 'กลับบ้านเหนื่อยแต่สนุก' },
@@ -749,8 +763,8 @@ const RSTEPS = {
   trip(G) {
     STEPS.trip(G);
     if (G.S.phase === 'home') {
-      const why = { rest: 'พักผ่อนที่บ้านเต็มที่', study: 'ตั้งใจอ่านหนังสือที่บ้าน', out: 'ไปเที่ยวกับครอบครัวและเพื่อน' }[G.lastTrip] || 'กลับบ้าน';
-      emit(G, 'trip', { detail: `กลับบ้านสองคืน ${why}` });
+      const why = { stay: 'อยู่หอ ถูกงดกลับบ้าน', rest: 'พักผ่อนที่บ้านเต็มที่', study: 'ตั้งใจอ่านหนังสือที่บ้าน', out: 'ไปเที่ยวกับครอบครัวและเพื่อน' }[G.lastTrip] || 'กลับบ้าน';
+      emit(G, 'trip', { detail: G.lastTrip === 'stay' ? `ไม่ได้กลับบ้านสองคืน ${why}` : `กลับบ้านสองคืน ${why}` });
     }
   },
   home(G) {
@@ -846,6 +860,7 @@ function classBlock(G, block, nextPhase, tag) {
   const S = G.S;
   const me = G.me;
   const ps = block === 'morning' ? morningPeriods(G) : afternoonPeriods(G);
+  if (!ps.length) return go(G, nextPhase); // a day with no classes in this block (freshers' day, sport Friday)
   S.minute = E.PERIODS[ps[0] - 1][0];
   S.place = 'ห้องเรียน';
   const { pending, has } = classPlanP(G, block, tag);
@@ -910,7 +925,8 @@ const ANSWERS = {
     }
   },
   event: answerEvent,
-  scolded: answerScolded,
+  cscene: answerCScene,
+  conduct: answerConduct,
   act_mg: (G, payload) => answerMg(G, payload),
   fair_choice: (G, payload) => answerActScene(G, payload),
   fair_own: (G, payload) => answerActScene(G, payload),
@@ -1033,15 +1049,23 @@ const ANSWERS = {
       }));
       return go(G, 'trip');
     }
-    if (payload.optionId === 'rest') applyFx(G, { stress: -25, health: 5, energy: 10 });
+    const cdn = cond(G);
+    const barred = cdn.noHome > 0 && !S.yearPending;
+    if (barred) {
+      cdn.noHome = 0; // the punishment is served
+      if (payload.optionId === 'rest') applyFx(G, { stress: -8, energy: 10 });
+      else { applyFx(G, { stress: 2 }); pl.bonusZ += 0.01; }
+      applyFx(G, { stress: 8, peer: -2 });
+    } else if (payload.optionId === 'rest') applyFx(G, { stress: -25, health: 5, energy: 10 });
     else if (payload.optionId === 'study') { applyFx(G, { stress: -8, health: 1 }); pl.bonusZ += 0.01; } else applyFx(G, { stress: -30, peer: 6, money: -300 });
-    if (S.mode === 'routine') say(G, { rest: 'กลับบ้านสุดสัปดาห์ นอนพักเต็มที่', study: 'กลับบ้านสุดสัปดาห์ อ่านหนังสือและทำงาน', out: 'กลับบ้านสุดสัปดาห์ ไปเที่ยวกับครอบครัวและเพื่อน' }[payload.optionId] || 'กลับบ้านสุดสัปดาห์', 'neutral');
+    if (S.mode === 'routine' && barred) say(G, 'ถูกงดกลับบ้านรอบนี้ อยู่หอสองวัน (โทษของหอพักจบแล้ว)', 'bad');
+    else if (S.mode === 'routine') say(G, { rest: 'กลับบ้านสุดสัปดาห์ นอนพักเต็มที่', study: 'กลับบ้านสุดสัปดาห์ อ่านหนังสือและทำงาน', out: 'กลับบ้านสุดสัปดาห์ ไปเที่ยวกับครอบครัวและเพื่อน' }[payload.optionId] || 'กลับบ้านสุดสัปดาห์', 'neutral');
     else say(G, 'กลับถึงหอวันอาทิตย์ 18:00', 'neutral');
     resetAsks(me);
     npcHome(G);
     if (S.mode === 'routine') {
       // the two nights at home are played day by day (phase 'home'); nothing else to do here
-      G.lastTrip = payload.optionId;
+      G.lastTrip = barred ? 'stay' : payload.optionId;
       if (payload.optionId === 'out') spend(G, 300);
       for (const T of Object.values(S.ts)) T.p *= E.NIGHT_DECAY;
       S.home = { k: 0 };

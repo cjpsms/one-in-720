@@ -89,7 +89,20 @@ export const E = {
   // ---- routine mode (docs/CONTRACT2.md): every number here is a PLACEHOLDER tuned by test/balance.test.js ----
   EVENT_CHANCE_ROUTINE: { dorm: 0.0052, class: 0.0046, canteen: 0.0041, weekend: 0.0155, home: 0.08 },
   EVENT_DAY: { school: 0.0085, weekend: 0.02, home: 0.014 }, // PLACEHOLDER: chance that a day has one random event (at most one a day, never on the day of another stop)
-  SCOLD_PENDINGS_PER_YEAR: 1, // player-targeted snaps that stop the game per school year; the others are resolved by themselves
+  SCOLD_PENDINGS_PER_YEAR: 5, // player-targeted snaps that stop the game per school year; the others are resolved by themselves (was 1: cj wanted to see them)
+  // ---- choice scenes (content/scenes*.js, engine/scenes.js): odds are shown as % and rolled, all PLACEHOLDER ----
+  BEAT: { SCHOOL: 0.08, WEEKEND: 0.1, CATCHUP_AFTER: 4, CATCHUP_STEP: 0.13, SCENE_SHARE: 0.85, RECENT_PENALTY: 0.05 }, // chance of a story beat per day, +step per day over CATCHUP_AFTER days without one; share of beats taken from the new scenes (the rest from events.js)
+  FILLER_AUTO: true, // lab / club / lecture filler mini games resolve by themselves with a one-line result (cj: too many mini games); festivals and contests stay playable
+  // ---- conduct and discipline (engine/conduct.js) ----
+  CONDUCT: {
+    DECAY_PER_DAY: 0.1, // points lost per day
+    TERM_KEEP: 0.6, // share of points kept at a term end
+    STAGES: [3, 6, 10, 14], // points for: name noted, dorm punishment, probation, disciplinary hearing
+    PROBATION_MULT: 1.5, // offences count more while on probation
+    PROBATION_CLEAN_DAYS: 25, // clean days that end probation
+    SKIP_CAUGHT: 0.25, // chance a skipped class is noticed
+    HEARING_EXPEL_BASE: 0.3, // chance of expulsion at a hearing before the modifiers
+  },
   MONEY_EMERGENCY_BELOW: 60, // a pending appears when the balance is under this and the parents cannot be asked any more
   MONEY_EMERGENCY_GAP: 20, // days between two emergencies
   MONEY_EMERGENCY_LOAN: 150,
@@ -102,7 +115,7 @@ export const E = {
   CLUB_FILL: 0.8, // NPC students fill at most this share of the seats before the player picks
 
   // ---- activities (docs/CONTRACT3.md): every number is a PLACEHOLDER unless marked cj ----
-  MINIGAMES_PER_YEAR: 17.5, // cj (round 24 follow-up): about 17-18 mini game plays a school year
+  MINIGAMES_PER_YEAR: 6, // filler plays only; with FILLER_AUTO they resolve by themselves (cj 2026-11-16: too many mini games). Festivals/contests stay playable
   ACT: {
     SAT_Z: 0.0016, // marks z gained per Saturday period at effort unit 1 (everyone's subjects)
     SAT_MATCH_Z: 0.006, // extra z on a subject of the same kind as the Saturday subject

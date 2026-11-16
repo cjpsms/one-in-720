@@ -4,9 +4,11 @@ import { clamp } from './util.js';
 import { E } from './config.js';
 import { shops, subjectOf, clubById } from './adapters.js';
 import { cellAt } from './world.js';
-import { classPeriod, decayTeachers } from './teachers.js';
+import { classPeriod, decayTeachers, CAUSE_TH } from './teachers.js';
 import { resolvePlayerTasks } from './tasks.js';
-import { periodInfo, scene, opt } from './pending.js';
+import { periodInfo } from './pending.js';
+import { directScene, answerCScene } from './scenes.js';
+import { offend, skipNoticed, cond } from './conduct.js';
 import { say, applyFx, addTrust, calOf, spend, studyFactor } from './player.js';
 import { rcAdd } from './recap.js';
 
@@ -125,6 +127,7 @@ function playerClass(G, info, p, input, skip, lines) {
           pl.cnt.caught += 1;
           rcAdd(G, 'caught');
           G.S.stat.caught += 1;
+          offend(G, 'snack');
         }
       } else if (res) say(G, `สั่งของจากมิ้วไม่สำเร็จ: ${res.reason}`, 'bad');
     }
@@ -143,6 +146,10 @@ function playerClass(G, info, p, input, skip, lines) {
     }
     me.close[idx] = clamp(me.close[idx] - 1.5, 0, 100);
     if (!pl.sick) say(G, `โดดคาบ ${info.short}`, 'bad');
+    if (skip.has(p) && !S.sickDay) { // a skipped class can be noticed: one mark a day at most
+      const cd = cond(G);
+      if (cd.skipDay !== S.day && skipNoticed(G, idx)) { cd.skipDay = S.day; offend(G, 'skip'); }
+    }
   } else {
     let unit = E.STANCE_UNIT[stance] * (0.65 + (0.35 * pl.energy) / 100) * studyFactor(G);
     if (pl.fullness < E.HUNGRY_BELOW) unit *= 0.8;
@@ -164,47 +171,23 @@ function playerClass(G, info, p, input, skip, lines) {
   if (res && res.snapped) {
     pl.cnt.snapsRoom = (pl.cnt.snapsRoom || 0) + 1;
     const when = `คาบ ${info.short}`;
-    say(G, `${tName}สลิ้งแตกใน${when}`, 'bad');
+    const why = res.cause && !caught ? CAUSE_TH[res.cause] : '';
+    say(G, `${tName}สลิ้งแตกใน${when}${why ? ' เพราะ' + why : ''}`, 'bad');
     if (!skipped) pl.stress = clamp(pl.stress + E.SNAP_STRESS, 0, 100);
     if (!skipped) { pl.cnt.snapsMe += 1; rcAdd(G, 'snaps'); } // a snap in a class the player sat in
     if (res.target === 'player' && !skipped) {
-      const sc = scoldedScene(G, tName, info, caught, idx);
-      if (S.mode === 'routine' && (S.stopDay === S.day || (!caught && !scoldPending(G)))) {
-        // the routine answers it by itself (the player is told in the record)
-        const o = S.routine.study === 'relax' ? 'silent' : 'apologize';
-        answerScolded(G, { optionId: o }, sc);
-      } else { S.queue.push(sc); S.stopDay = S.day; }
+      const sc = directScene(G, 'scolded', { tk, caught, why: why || '' }, 'class');
+      if (sc) {
+        if (S.mode === 'routine' && (S.stopDay === S.day || (!caught && !scoldPending(G)))) {
+          // the routine answers it by itself (the player is told in the record)
+          answerCScene(G, { optionId: S.routine.study === 'relax' ? 'silent' : 'apologize' }, sc);
+        } else { S.queue.push(sc); S.stopDay = S.day; }
+      }
     }
     else if (res.kind === 'extra') say(G, 'ครูสั่งงานเพิ่มให้ทั้งห้อง', 'bad');
     else if (res.kind === 'quiz') say(G, 'ครูสุ่มเก็บคะแนนกะทันหัน', 'bad');
     else if (res.kind === 'walkout') say(G, 'ครูเดินออกจากห้อง คาบนี้เรียนไม่ได้เลย', 'bad');
   }
-}
-
-function scoldedScene(G, tName, info, caught, idx) {
-  const text = caught
-    ? `${tName}จับได้ว่าแอบกินของในคาบ${info.short} ครูสลิ้งแตกทันที ทั้งห้องหันมามอง`
-    : `${tName}สลิ้งแตกในคาบ${info.short} แล้วหันมาตำหนิเราโดยตรง ทั้งห้องเงียบกริบ`;
-  return scene(G, {
-    tag: 'scolded', title: `${tName}สลิ้งแตก`, text,
-    options: [
-      opt('apologize', 'ขอโทษและรับผิด', 'ครูใจอ่อนลงเร็วที่สุด', 'good'),
-      opt('silent', 'ก้มหน้านิ่ง ฟังไปเงียบๆ', 'ไม่ได้ผลดีนัก'),
-      opt('argue', 'เถียงกลับ', 'เพื่อนในห้องอาจชอบ แต่ครูไม่ชอบแน่', 'bad'),
-    ],
-    data: { idx },
-  });
-}
-
-export function answerScolded(G, payload, pd) {
-  const pl = G.S.pl;
-  const me = G.me;
-  const idx = pd.data.idx;
-  const set = { apologize: [-2, 3, 0], silent: [-4, 5, 0], argue: [-10, 6, 4] }[payload.optionId];
-  me.close[idx] = clamp(me.close[idx] + set[0], 0, 100);
-  pl.stress = clamp(pl.stress + set[1], 0, 100);
-  pl.peer = clamp(pl.peer + set[2], 0, 100);
-  say(G, { apologize: 'ขอโทษครู ครูพยักหน้าแล้วสอนต่อ', silent: 'ก้มหน้านิ่ง จนครูหายโมโหเอง', argue: 'เถียงครูกลับ ทั้งห้องตกใจ' }[payload.optionId], 'neutral');
 }
 
 function playerActivity(G, info, input, skip) {

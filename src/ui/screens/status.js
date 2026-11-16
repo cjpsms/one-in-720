@@ -110,6 +110,17 @@ function friendsCard(view) {
     })) : null);
 }
 
+// conduct (view().conduct): points, stage, probation and the risk of being expelled at a hearing
+function conductCard(view) {
+  const c = view.conduct;
+  if (!c) return null;
+  const rows = [detailRow('สถานะความประพฤติ', c.label), detailRow('แต้มพฤติกรรม', String(c.pts))];
+  if (c.noHome) rows.push(detailRow('โทษที่หอ', 'งดกลับบ้านรอบหน้า'));
+  if (c.expelRisk) rows.push(detailRow('ถ้าถูกเรียกประชุมตอนนี้ มีโอกาสโดนไล่ออกประมาณ', `${c.expelRisk}%`));
+  return h('section', { class: `card conduct${c.stage >= 3 ? ' warn' : ''}` }, h('h3', { text: 'ความประพฤติ' }), h('dl', { class: 'rows list' }, rows),
+    c.stage === 0 && !c.pts ? h('p', { class: 'muted', text: 'ยังไม่เคยถูกจดชื่อ' }) : h('p', { class: 'muted', text: 'แต้มจะลดลงเองทุกวันถ้าไม่ทำผิดซ้ำ ถ้าสูงมากจะถูกเรียกประชุมกรรมการและอาจถูกไล่ออก' }));
+}
+
 // Full status panel. Works as a screen module: render(container, pending, ctx).
 export function render(container, _pending, ctx) {
   container.textContent = '';
@@ -153,6 +164,7 @@ export function render(container, _pending, ctx) {
           detailRow('เกรดเทอมนี้', Number(s.gpa || 0).toFixed(2)),
           detailRow('เกรดเฉลี่ยสะสม', Number(s.gpax || 0).toFixed(2)),
           view.askParents ? detailRow('ขอเงินพ่อแม่', view.askParents.available ? `ได้ (ครั้งหน้า ${fmtInt(view.askParents.nextAmount)} บาท)` : 'ขอไม่ได้ตอนนี้') : null)),
+      conductCard(view),
       friendsCard(view),
       view.today && view.today.length
         ? h('section', { class: 'card' }, h('h3', { text: 'ตารางวันนี้' }),

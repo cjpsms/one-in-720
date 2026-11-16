@@ -15,6 +15,7 @@ import { taskNotes } from './tasks.js';
 import { roommates } from './world.js';
 import { DOW_TH, hhmm } from './util.js';
 import { friendsView, partnerView } from './friends.js';
+import { conductView } from './conduct.js';
 
 // the day's timeline: done blocks carry their real detail, upcoming ones only the plan
 function dayView(G, cal) {
@@ -57,6 +58,7 @@ function makeView(G) {
     mode: S.mode,
     miniGames: S.miniGames,
     friends: friendsView(G),
+    conduct: conductView(G),
     partner: partnerView(G),
     routine: { ...S.routine },
     progress: { yearIndex: clamp0(cal.year - 1, 5), termIndex: cal.term - 1, dayInYear, daysInYear, fraction: Math.min(1, dayInYear / daysInYear) },

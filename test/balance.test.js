@@ -135,9 +135,9 @@ async function main() {
   }
   for (const [name, s] of [['focus', F], ['normal', M], ['relax', X]]) {
     check(`${name}: teacher snaps in the player's classes about 3-8 a year (2.5-10 allowed for one preset)`, s.snaps >= 2.5 && s.snaps <= 10, f(s.snaps, 1));
-    check(`${name}: random events 1.5-5 a year (round 22: fewer, better stops)`, s.events >= 1.5 && s.events <= 5, f(s.events, 1));
-    check(`${name}: about 6-11 stops per school year (all kinds, default answers)`, s.pend / 6 >= 5.5 && s.pend / 6 <= 11.5, `${f(s.pend / 6, 1)} a year`);
-    check(`${name}: a whole life uses at most about 120 pendings (95th percentile)`, s.pend95 <= 120, `mean ${f(s.pend)}, p95 ${f(s.pend95)}, max ${s.pendMax}`);
+    check(`${name}: story beats 35-65 a year (about one a week, cj 2026-11-16)`, s.events >= 35 && s.events <= 65, f(s.events, 1));
+    check(`${name}: about 40-70 stops per school year (all kinds, default answers)`, s.pend / 6 >= 40 && s.pend / 6 <= 70, `${f(s.pend / 6, 1)} a year`);
+    check(`${name}: a whole life uses at most about 450 pendings (95th percentile)`, s.pend95 <= 450, `mean ${f(s.pend)}, p95 ${f(s.pend95)}, max ${s.pendMax}`);
     check(`${name}: money does not run out (emergencies under 0.5 a life)`, s.emerg < 0.5, f(s.emerg, 2));
   }
   const snapsMean = (F.snaps + M.snaps + X.snaps) / 3;

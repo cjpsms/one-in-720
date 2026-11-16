@@ -183,6 +183,7 @@ export function defaultPayload(G, pd) {
     case 'scene':
       if (pd.tag === 'crush') return { optionId: S.crushMode === 'accept' ? 'accept' : 'decline' }; // the default life has no relationship (balance baseline)
       if (pd.tag === 'fair_choice') return { optionId: (pd.options.find((o) => o.id.startsWith('work:')) || pd.options[0]).id };
+      if (pd.data && pd.data.defaultId) return { optionId: pd.data.defaultId };
       return pd.final ? {} : { optionId: (pd.options.find((o) => !o.disabled) || pd.options[0] || {}).id };
     case 'shop': {
       const cart = defaultCart(G, pd);

@@ -59,7 +59,7 @@ function hallSpec(G, kind, ctx) {
 function launch(G, a, o) {
   const S = G.S;
   const diff = mgDifficulty(G, o.game, o.bias || 0, o.xs);
-  const blocked = S.miniGames !== 'play' || (o.filler && !o.forced && (S.stopDay === S.day || S.playDay === S.day));
+  const blocked = S.miniGames !== 'play' || (o.filler && !o.forced && (E.FILLER_AUTO || S.stopDay === S.day || S.playDay === S.day));
   if (blocked) {
     const skip = o.canSkip && S.miniGames === 'auto' && G.rng.chance(A.SKIP_AUTO[S.routine.study] || 0);
     a.res = skip ? { skip: true } : { score: autoScore(G, o.game, diff, o.xs), auto: true };

@@ -359,6 +359,14 @@ dialog.sheet[open] { animation: sheetup 0.28s ease-out; }
 .opt:hover:not(:disabled) { border-color: var(--accent); border-left-color: var(--accent); }
 .opt .opt-label { display: block; font-weight: 700; }
 .opt .opt-sub { display: block; font-size: 0.9rem; color: var(--muted); margin-top: 2px; }
+/* choice scenes: cost chip, chance bar, reasons */
+.opt .opt-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.opt .cost-chip { font: 600 0.78rem var(--mono); padding: 1px 7px; border: 1px solid var(--line); border-radius: 999px; color: var(--fg); }
+.opt .chance { display: inline-flex; align-items: center; gap: 8px; }
+.opt .chance-n { font-weight: 700; color: var(--fg); }
+.opt .chance-bar { width: 64px; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; display: inline-block; }
+.opt .chance-bar i { display: block; height: 100%; background: var(--good); }
+.opt .chance-why { flex-basis: 100%; font-size: 0.8rem; color: var(--muted); }
 .opt .opt-tone { display: inline-block; font: 600 0.7rem var(--mono); margin-left: 8px; vertical-align: 1px; letter-spacing: 0.04em; }
 .opt.tone-good { border-left-color: var(--good); }
 .opt.tone-bad { border-left-color: var(--bad); }
@@ -436,3 +444,4 @@ dialog.sheet[open] { animation: sheetup 0.28s ease-out; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+.card.conduct.warn { border-color: var(--bad); }

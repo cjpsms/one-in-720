@@ -3,6 +3,13 @@
 import { clamp } from './util.js';
 import { E } from './config.js';
 
+export const CAUSE_TH = {
+  carry: 'ครูโมโหสะสมมาจากคาบก่อนๆ',
+  defy: 'ห้องเสียงดังและไม่ตั้งใจเรียน',
+  miss: 'มีคนไม่ส่งงานที่สั่งไว้',
+  extra: 'โดนจับได้ว่าทำผิดในคาบ',
+};
+
 export const patience01 = (G, tk) => {
   const t = G.S.teachers[tk];
   return clamp((t ? t.personality.patience : 50) / 100, 0.05, 1);
@@ -38,23 +45,30 @@ export function classPeriod(G, g, room, p, cell, opts = {}) {
   }
   const defy = clamp((S.rdef[g] ? S.rdef[g][room] : 0.4) + (opts.defyAdj || 0), 0, 1);
   const shareNot = n ? 1 - nClose / n : 0;
-  let add = E.DEFY_K * defy * shareNot * (0.7 + 0.6 * G.rng.float());
+  const carried = T.p; // pressure the teacher walked in with (from earlier classes)
+  const defyAdd = E.DEFY_K * defy * shareNot * (0.7 + 0.6 * G.rng.float());
+  let add = defyAdd;
   const miss = T.miss[room] | 0;
+  let missAdd = 0;
   if (miss) {
-    add += E.MISS_K * miss;
+    missAdd = E.MISS_K * miss;
+    add += missAdd;
     delete T.miss[room];
   }
   if (opts.extraPressure) add += opts.extraPressure;
+  // why it went off: the biggest piece of the pressure (shown to the player, and used by the scene text)
+  const parts = [['carry', carried], ['defy', defyAdd], ['miss', missAdd], ['extra', opts.extraPressure || 0]];
+  const cause = parts.reduce((a, b) => (b[1] > a[1] ? b : a))[0];
   T.p += add;
   const key = `${g}:${room}:${p}`;
   const forced = !!S.forced[key];
   if (forced) delete S.forced[key];
   const thr = threshold(G, tk);
   if (!forced && !opts.force && T.p < thr) return { tk, snapped: false, ratio: T.p / thr };
-  return snap(G, g, room, tk, T, mem, idx, opts, miss, cell);
+  return snap(G, g, room, tk, T, mem, idx, opts, miss, cell, cause);
 }
 
-function snap(G, g, room, tk, T, mem, idx, opts, miss, cell) {
+function snap(G, g, room, tk, T, mem, idx, opts, miss, cell, cause) {
   const S = G.S;
   const rng = G.rng;
   T.p = threshold(G, tk) * E.SNAP_RESET;
@@ -97,5 +111,5 @@ function snap(G, g, room, tk, T, mem, idx, opts, miss, cell) {
     // extra homework for this room
     S.tasks.push({ id: `x${++S.taskSeq}`, tk, grade: g, room, name: 'งานเพิ่มที่ครูสั่งตอนสลิ้งแตก', kind: 'extra', effort: 1, due: S.day + 2, req: [], code: cell.code, npcDone: false, day: S.day });
   }
-  return { tk, snapped: true, kind, target, ratio: 1 };
+  return { tk, snapped: true, kind, target, ratio: 1, cause };
 }

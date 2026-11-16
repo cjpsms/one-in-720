@@ -214,6 +214,7 @@ const ENDINGS = {
   quit: { title: 'ลาออก', text: `เราตัดสินใจลาออกจากโรงเรียน ต้องจ่ายค่าธรรมเนียม ${nf(E.QUIT_FEE_PER_TERM)} บาทต่อเทอม (ปีละ ${nf(E.QUIT_FEE_PER_TERM * 2)} บาท) ตามที่ตกลงกันไว้` },
   failed_gate_smurf: { title: 'ไป smurf ที่โรงเรียนใกล้บ้าน', text: 'สอบ ม.4 ไม่ติด แต่ไม่ยอมแพ้ ย้ายไปเรียนต่อที่โรงเรียนใกล้บ้าน เรื่องของเราที่นี่จบแล้ว แต่เรื่องใหม่เพิ่งเริ่ม' },
   failed_gate_stop: { title: 'หยุดเรียน', text: 'สอบ ม.4 ไม่ติด และเลือกที่จะหยุดเรียน ชีวิตที่โรงเรียนจบลงตรงนี้' },
+  expelled: { title: 'ถูกไล่ออก', text: 'คณะกรรมการวินัยลงมติให้พ้นสภาพนักเรียน เก็บของออกจากหอพักภายในวันนั้น ผู้ปกครองมารับ เรื่องของเราที่โรงเรียนนี้จบลงตรงนี้' },
   left_elite: { title: 'ลาไปโรงเรียนอื่น', text: 'เราเลือกไปเรียนต่อที่อื่นทั้งที่ยังเรียนอยู่ห้องหัวแถว ถือเป็นแบดเอนดิ้งของเรื่องนี้' },
 };
 
@@ -223,7 +224,7 @@ export function endGame(G, kind, extra = '') {
   const pl = S.pl;
   const e = ENDINGS[kind];
   S.ending = kind;
-  me.status = { graduated: 'graduated', quit: 'dropped', failed_gate_smurf: 'failed_gate', failed_gate_stop: 'failed_gate', left_elite: 'left_elite' }[kind];
+  me.status = { graduated: 'graduated', quit: 'dropped', failed_gate_smurf: 'failed_gate', failed_gate_stop: 'failed_gate', left_elite: 'left_elite', expelled: 'dropped' }[kind];
   const gx = gpax(pl);
   const card = [
     ['จบแบบไหน', e.title],

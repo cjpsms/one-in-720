@@ -35,6 +35,24 @@ function scoreBoard(rows) {
 
 const TONE_TEXT = { good: 'ผลดี', bad: 'เสี่ยง' };
 
+// option sub line: "45 บาท · สำเร็จ ~85% (+ครูไว้ใจ −ครูตึง)" -> a cost chip, a chance chip with a small bar, the reasons as small text
+function subLine(sub) {
+  const parts = String(sub).split(' · ');
+  const box = h('span', { class: 'opt-sub' });
+  for (const part of parts) {
+    const m = /^(.*?)~(\d+)%\s*(?:\((.*)\))?$/.exec(part);
+    if (m) {
+      const n = Number(m[2]);
+      box.append(h('span', { class: 'chance', role: 'img', 'aria-label': `${m[1].trim() || 'โอกาส'} ${n} เปอร์เซ็นต์` },
+        h('span', { class: 'chance-n', text: `${m[1].trim() || 'โอกาส'} ${n}%` }),
+        h('span', { class: 'chance-bar' }, h('i', { style: `width:${n}%` }))));
+      if (m[3]) box.append(h('span', { class: 'chance-why', text: m[3] }));
+    } else if (/บาท$/.test(part)) box.append(h('span', { class: 'cost-chip', text: part }));
+    else box.append(h('span', { class: 'sub-text', text: part }));
+  }
+  return box;
+}
+
 // person card (CONTRACT3 section 10): name, grade/room and a closeness bar, when the scene carries card.person
 function personCard(p) {
   const c = Math.max(0, Math.min(100, Number(p.closeness) || 0));
@@ -56,7 +74,7 @@ export function render(container, pending, ctx) {
     const tone = o.tone === 'good' || o.tone === 'bad' ? o.tone : 'neutral';
     const btn = h('button', { type: 'button', class: `opt tone-${tone}`, disabled: !!o.disabled, 'data-option': o.id },
       h('span', { class: 'opt-label' }, o.label, TONE_TEXT[tone] ? h('span', { class: 'opt-tone', text: TONE_TEXT[tone] }) : null),
-      o.sub ? h('span', { class: 'opt-sub', text: o.sub }) : null,
+      o.sub ? subLine(o.sub) : null,
       o.disabled && o.reason ? h('span', { class: 'opt-reason', text: o.reason }) : null);
     btn.addEventListener('click', () => {
       container.querySelectorAll('button').forEach((b) => { b.disabled = true; });

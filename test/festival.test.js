@@ -58,7 +58,7 @@ let allPlaysValid = true;
   console.log('plays per year:', JSON.stringify(perYear), 'events:', JSON.stringify(ctxCount));
   const ys = Object.keys(perYear).map(Number);
   const normal = ys.filter((y) => y !== 1 && y !== 4);
-  check('plays per school year are 15-20 (cj: about 17-18; year 1 and 4 add the freshers)', normal.every((y) => perYear[y] >= 15 && perYear[y] <= 20) && ys.filter((y) => y === 1 || y === 4).every((y) => perYear[y] >= 15 && perYear[y] <= 26), JSON.stringify(perYear));
+  check('plays per school year are 4-8 (cj 2026-11-16: fewer mini games, only the festivals and contests; year 1 and 4 add the freshers)', normal.every((y) => perYear[y] >= 4 && perYear[y] <= 8) && ys.filter((y) => y === 1 || y === 4).every((y) => perYear[y] >= 6 && perYear[y] <= 12), JSON.stringify(perYear));
   check('the Loy Krathong float and the night show happen once a year (the last year has no show after the ending)', ctxCount.loy_float >= 5 && ctxCount.loy_float <= 6 && (ctxCount.show_act || 0) + (ctxCount.show_camera || 0) + (ctxCount.show_sound || 0) + (ctxCount.show_edit || 0) + (ctxCount.show_director || 0) + (ctxCount.show_watch || 0) >= 5);
   check('the freshers play in year 1 and year 4', (ctxCount.fresher_game || 0) + (ctxCount.fresher_hall || 0) + (ctxCount.fresher_serve || 0) >= 6);
   check('a whole life in play mode stays fast (under 8 s)', timeMs < 8000, timeMs + ' ms');
@@ -124,7 +124,7 @@ let allPlaysValid = true;
     }
   }
   const rate = caught / Math.max(1, tried);
-  check('skipping a lecture: about half are caught and made to attend (cj: 50%)', tried >= 90 && rate > 0.38 && rate < 0.62, `${caught}/${tried} = ${rate.toFixed(2)}`);
+  check('skipping a lecture: about half are caught and made to attend (cj: 50%); lecture plays are automatic now (FILLER_AUTO) so there is nothing to skip', tried === 0 || (tried >= 90 && rate > 0.38 && rate < 0.62), `${caught}/${tried} = ${rate.toFixed(2)}`);
   // a caught skip lowers trust with teachers
   const g = createGame({ seed: 501 });
   let before = null;
